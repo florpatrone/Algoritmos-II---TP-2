@@ -41,7 +41,39 @@ void mensaje_error(char* comando){
     fprintf(stderr,"%s %s\n","Error en comando",comando);
 }
 
-void agregar_archivo(char** comando, hash_t* hash, abb_t* abb){}
+void agregar_archivo(char** comando, hash_t* hash, abb_t* abb){
+    if (!comando[1] || comando[2]){
+        mensaje_error(comando[0]);
+        return;
+    }
+    
+    FILE* archivo = fopen(comando[1],"r");
+    if (!archivo){
+        mensaje_error(comando[0]);
+        return;
+    }
+    
+    char* linea = NULL;
+	size_t n = 0;
+
+    while ((getline(&linea, &n, archivo)) > 0){
+        char** datos = split(linea,',');
+        if (!datos){
+            mensaje_error(comando[0]);
+            break;
+        }
+        vuelo_t* vuelo = vuelo_crear(datos);
+        if (!vuelo){
+            mensaje_error(comando[0]);
+            free_strv(datos);
+            break;
+        }
+        free(datos);
+        abb_guardar(abb,vuelo->fecha,vuelo);
+        hash_guardar(hash,vuelo->numero_vuelo,vuelo);
+    }
+    fclose(archivo);
+}
 
 void ver_tablero(char** comando, abb_t* abb){}
 
