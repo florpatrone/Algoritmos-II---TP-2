@@ -12,6 +12,7 @@ int main(int argc, char const *argv[]){
 
     while ((getline(&linea, &n, stdin)) > 0){
         char** comando = split(linea,' ');
+        remover_salto_linea(comando);
         ejecutar_comando(comando,hash,abb);        
     }
     return 0;

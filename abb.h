@@ -1,3 +1,6 @@
+#ifndef ABB_H
+#define ABB_H
+
 #include <stdbool.h>
 #include <stddef.h>
 
@@ -5,7 +8,9 @@ typedef struct abb abb_t;
 typedef int (*abb_comparar_clave_t) (const char *, const char *);
 typedef void (*abb_destruir_dato_t) (void *);
 
-/* Primitivas del abb */
+/**************************
+*   Primitivas del abb
+**************************/
 
 /* Crea un arbol binario de búsqueda con una raiz nula, cantidad 0,
 una función de comparación y una función de destrucción.
@@ -38,14 +43,18 @@ bool abb_pertenece(const abb_t *arbol, const char *clave);
 /* Devuelve la cantidad de nodos que tiene el arbol.*/
 size_t abb_cantidad(abb_t *arbol);
 
-/* Destruye el arbol y todos sus nodos */
+/* Destruye el arbol y todos sus nodos.*/
 void abb_destruir(abb_t *arbol);
 
-/* Iterador externo del abb */
+/******************************
+ * Iterador externo del abb
+ * **************************/
 
 typedef struct abb_iter abb_iter_t;
 
-/* Primitivas del iterador externo del abb */
+/**********************************************
+ * Primitivas del iterador externo del abb
+ * *******************************************/
 
 /* Crea un iterador del arbol que señala al primer
 elemento inorder del mismo.*/
@@ -70,3 +79,5 @@ void abb_iter_in_destruir(abb_iter_t* iter);
 
 /* Aplica la función "visitar" nodo a nodo de modo INORDER */
 void abb_in_order(abb_t *arbol, bool visitar(const char *, void *, void *), void *extra);
+
+#endif

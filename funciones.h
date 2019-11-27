@@ -15,3 +15,5 @@ void prioridad_vuelos(char** comando, abb_t* abb);
 void borrar(char** comando,hash_t* hash, abb_t* abb);
 
 void ejecutar_comando(char** comando, hash_t* hash, abb_t* abb);
+
+void remover_salto_linea(char** vector);
