@@ -258,21 +258,24 @@ void prioridad_vuelos(char* comando, int k, abb_t* abb){
     if (abb_cantidad(abb) == 0){
         printf("OK\n");
         return;
-    }   
+    }
+
     lista_t* lista = lista_crear();
     if (!lista){
         mensaje_error(comando);
         return;
     }
+
     abb_iter_t* iterador = abb_iter_in_crear(abb);
     vuelo_t* actual;
     vuelo_t* siguiente;
 
     actual = abb_obtener(abb, abb_iter_in_ver_actual(iterador));
-    int restantes = k ;
+    int restantes = k - 1;
 
-    while (restantes > 0){
-        if (restantes == 1){
+    while (restantes >= 0){
+        
+        if (restantes == 0){
             lista_insertar_ordenado(lista,actual);
             break;
         }
