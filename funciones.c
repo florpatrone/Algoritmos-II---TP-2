@@ -54,7 +54,7 @@ int main(){
     
 	        case INFO_VUELOS:
 	        		int num_vuelo = atoi(c_input[1]);
-                    info_vuelo(hash,num_vuelo);
+                    info_vuelo(hash,num_vuelo,comando);
 
 	        case PRIORIDAD_VUELOS:
                 int cant_vuelos = atoi(c_input[1]);
@@ -164,8 +164,12 @@ void agregar_archivo(char* comando, char* nombre, hash_t* hash, abb_t* abb){
 
 void ver_tablero(char** comando, abb_t* abb){}
 
-void info_vuelo(hash_t* hash, char* num_vuelo){
+void info_vuelo(hash_t* hash, char* num_vuelo, char* comando){
     vuelo_t* vuelo = hash_obtener(hash,num_vuelo);
+    if (vuelo){
+        mensaje_error(comando);
+        return;
+    }
     printf("%s ",vuelo->numero_vuelo);
     printf("%s ",vuelo->aerolinea);
     printf("%s ",vuelo->aeropuerto_origen);
