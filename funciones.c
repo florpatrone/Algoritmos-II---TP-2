@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include "heap.h"
 #include "funciones.h"
-#include "lista.h"
+#include "lista.c"
 #define AGREGAR_ARCHIVO "agregar_archivo"
 #define VER_TABLERO "ver_tablero"
 #define INFO_VUELOS "info_vuelos"
@@ -144,6 +144,36 @@ void imprimir_datos_vuelo(vuelo_t* vuelo){
 
 void imprimir_prioridad(vuelo_t* vuelo){
     printf("%s - %s\n",vuelo->prioridad,vuelo->numero_vuelo);
+}
+
+bool lista_insertar_ordenado(lista_t* lista, vuelo_t* vuelo){    
+    nodo_t* nodo = nodo_crear(vuelo);
+    if (nodo == NULL) return false;
+
+    lista_iter_t* iter = lista_iter_crear(lista);
+    if (!iter)     return false;
+
+    if (lista_esta_vacia(lista)){
+        if (lista_iter_insertar(lista,nodo)){
+            lista->longitud++;
+            return true;
+        }
+        return false;
+    }
+
+    vuelo_t* actual;
+    while (!lista_iter_al_final(iter)){
+        actual = lista_iter_ver_actual(iter);
+        if (vuelo->numero_vuelo > actual->numero_vuelo){
+            if(!lista_iter_insertar(lista,nodo))    return false;
+            break;
+        }
+        if (!lista_iter_avanzar(iter))  return false;
+    }
+    if (!lista_iter_insertar(lista,nodo))   return false;
+    lista->longitud++;
+    lista_iter_destruir(iter);
+    return true;
 }
 /*************************
  * FUNCIONES PRINCIPALES
