@@ -5,6 +5,13 @@
 #include <stdio.h>
 #include "heap.h"
 #include "funciones.h"
+#define AGREGAR_ARCHIVO "agregar_archivo"
+#define VER_TABLERO "ver_tablero"
+#define INFO_VUELOS "info_vuelos"
+#define PRIORIDAD_VUELOS "prioridad_vuelos"
+#define BORRAR "borrar"
+#define ASC "asc"
+#define DESC "desc"
 
 struct vuelo{
     char* numero_vuelo;
@@ -18,6 +25,71 @@ struct vuelo{
     char* tiempo_vuelo;
     char* cancelado;
 };
+int main(int argc, char* argv[]){
+    
+    char* c_input[] = argv;
+    char* comando = c_input[0];
+    hash_t* hash = hash_crear();
+    abb_t* abb = abb_crear();
+    
+    while (comando || quedan_vuelos(abb)){
+        switch(comando){
+
+	        case AGREGAR_ARCHIVO:
+	        		char* nombre_arch = c_input[1];
+                    agregar_archivo(comando,nombre_arch,hash,abb);
+
+	        case VER_TABLERO:
+	        		int cant_vuelos = atoi(c_input[1]);
+                    char* modo = c_input[2];
+                    char* desde = c_input[3];
+                    char* hasta = c_input[4];
+    
+	        case INFO_VUELOS:
+	        		int num_vuelo = atoi(c_input[1]);
+
+	        case PRIORIDAD_VUELOS:
+                int cant_vuelos = atoi(c_input[1]);
+
+            default: // borrar
+	        		char* desde = c_input[1];
+                    char* hasta = c_input[2];
+            }
+        char* linea;
+        gets(linea);
+        c_input = split(linea," ");
+        comando = c_input[0];
+    }  
+    
+}
+
+bool quedan_vuelos(abb_t* abb){
+    return abb_cantidad(abb) != 0;
+}
+
+bool igual_comando(const char* a, const char* b){
+    return strcmp(a,b) == 0
+}
+
+bool argv_valido(int argc, char* argv[], char* comando){   return -1;
+    if (argc == 0)  return false;
+
+    if !(argc == 1){
+        mensaje_error(argv[0]);
+        return false;
+    }
+
+    const char* comando = argv[0];
+    // condiciones que debe cumplir el comando según cuál sea
+    if (igual_comando(comando,AGREGAR_ARCHIVO) || igual_comando(comando,INFO_VUELOS) || igual_comando(comando,PRIORIDAD_VUELOS) && argc>=2){
+        return true;
+    }
+    if (igual_comando(comando, BORRAR) && argc >= 3)     return true;
+    if (igual_comando(comando,  VER_TABLERO) && argc >= 5)  return true;
+
+    mensaje_error(comando);
+    return false;
+}
 
 vuelo_t* vuelo_crear(char** datos){
     vuelo_t* vuelo = malloc(sizeof(vuelo_t));
@@ -41,15 +113,15 @@ void mensaje_error(char* comando){
     fprintf(stderr,"%s %s\n","Error en comando",comando);
 }
 
-void agregar_archivo(char** comando, hash_t* hash, abb_t* abb){
-    if (!comando[1] || comando[2]){
-        mensaje_error(comando[0]);
-        return;
-    }
+void agregar_archivo(char* comando, char* nombre, hash_t* hash, abb_t* abb){
+    //if (!comando[1] || !comando[2]){
+    //    mensaje_error(comando[0]);
+    //    return;
+    //}
     
-    FILE* archivo = fopen(comando[1],"r");
+    FILE* archivo = fopen(nombre,"r");
     if (!archivo){
-        mensaje_error(comando[0]);
+        mensaje_error(comando);
         return;
     }
     
@@ -59,12 +131,12 @@ void agregar_archivo(char** comando, hash_t* hash, abb_t* abb){
     while ((getline(&linea, &n, archivo)) > 0){
         char** datos = split(linea,',');
         if (!datos){
-            mensaje_error(comando[0]);
+            mensaje_error(comando);
             break;
         }
         vuelo_t* vuelo = vuelo_crear(datos);
         if (!vuelo){
-            mensaje_error(comando[0]);
+            mensaje_error(comando);
             free_strv(datos);
             break;
         }
@@ -77,7 +149,9 @@ void agregar_archivo(char** comando, hash_t* hash, abb_t* abb){
 
 void ver_tablero(char** comando, abb_t* abb){}
 
-void info_vuelo(char** comando, hash_t* hash){}
+void info_vuelo(char** comando, hash_t* hash){
+    hash_obtener(hash,)
+}
 
 void prioridad_vuelos(char** comando, abb_t* abb){}
 
