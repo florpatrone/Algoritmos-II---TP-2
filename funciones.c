@@ -3,7 +3,7 @@
 #define VER_TABLERO "ver_tablero"
 #define INFO_VUELOS "info_vuelos"
 #define PRIORIDAD_VUELOS "prioridad_vuelos"
-#define BORRAR "borrar"
+#define BORRAR_VUELOS "borrar"
 #define ASC "asc"
 #define DESC "desc"
 
@@ -16,6 +16,8 @@
 #include "funciones.h"
 #include "funciones.h"
 #include "lista.c"
+
+enum operacion{AGREGAR,VER,INFO,PRIORIDAD,BORRAR};
 
 typedef struct vuelo{
     char* numero_vuelo;
@@ -93,27 +95,30 @@ bool igual_comando(const char* a, const char* b){
     return strcmp(a,b) == 0;
 }
 
-bool comando_valido(int cant_elem, char* linea[]){
+bool comando_valido(int cant_elem, char* linea[], int operacion){
     /* Verifica que al comando ingresado por stdin le corresponda
     la cantidad de parámetros que necesita según cuál sea. Devuelve true si
     la cantidad de parámetros ingresada es válida y false de lo contrario*/
-    if (cant_elem == 0)  return false;
-
-    if !(cant_elem == 1){
-        mensaje_error(linea[0]);
-        return false;
-    }
+    if (!(cant_elem > 1))  return false;
 
     const char* comando = linea[0];
     // condiciones que debe cumplir el comando según cuál sea
-    if (igual_comando(comando,AGREGAR_ARCHIVO) || igual_comando(comando,INFO_VUELOS) || igual_comando(comando,PRIORIDAD_VUELOS) && cant_elem>=2){
-        return true;
+    if ( (operacion == AGREGAR || operacion == INFO || operacion == PRIORIDAD) && cant_elem != 2){
+        return false;
     }
-    if (igual_comando(comando, BORRAR) && cant_elem >= 3)     return true;
-    if (igual_comando(comando,  VER_TABLERO) && cant_elem >= 5)  return true;
-
-    mensaje_error(comando);
-    return false;
+    if (operacion == VER){
+        if (cant_elem != 5 || !es_natural(linea[1])) return false;
+        if (!(igual_comando(ASC,linea[2]) || igual_comando(DESC,linea[2]))) return false;
+    }
+    else if (operacion == PRIORIDAD && !es_natural(linea[1])){
+        return false;
+    }
+    else if (operacion == BORRAR){
+        if (cant_elem != 3 || !rango_valido(linea[1],linea[2])){
+            return false;
+        }
+    }
+    return true;
 }
 
 vuelo_t* vuelo_crear(char** datos){
@@ -237,7 +242,7 @@ int main(){
     char** c_input = split(linea," ");
 
     int cant_elem = len_vector(c_input);
-    if (!(comando_valido(cant_elem, c_input)))  return -1;
+    if (!((cant_elem, c_input)))  return -1;
 
     char* comando = c_input[0];
 
@@ -265,7 +270,7 @@ int main(){
                 int cant_vuelos = atoi(c_input[1]);
                 if (!prioridad_vuelos(cant_vuelos, hash))   mensaje_error(comando);
 
-            case BORRAR:
+            case BORRAR_VUELOS:
 	        		char* desde = c_input[1];
                     char* hasta = c_input[2];
             default:
@@ -408,44 +413,33 @@ bool prioridad_vuelos(hash_t* hash, int k){
 bool borrar(abb_t* abb, hash_t* hash, char* desde, char* hasta){}
 
 bool ejecutar_comando(char** comando, hash_t* hash, abb_t* abb){
-    if (igual_comando(AGREGAR_ARCHIVO,comando[0])){
-        char* nombre_archivo = comando[1];
-        if (!nombre_archivo || comando[2]) return false;
-        return agregar_archivo(abb,hash,nombre_archivo);
-    }
-    if (igual_comando(VER_TABLERO,comando[0])){
-        for (int i = 1; i < 5; i++) if (!comando[i]) return false;
-        if (comando[5]) return false;
+    int cant_elem = len_vector(comando);
+    char* operacion = comando[0];
 
-        char* cant_vuelos = comando[1];
-        char* modo = comando[2];
-        char* desde = comando[3];
-        char* hasta = comando[4];
-        
-        if (!es_natural(cant_vuelos)) return false;
-        if (! (igual_comando(ASC,modo) || igual_comando(DESC,modo)) ) return false;
-        if (strcmp(desde,hasta) > 0) return false;
-        return ver_tablero(abb,atoi(cant_vuelos),modo,desde,hasta);
+    if (igual_comando(AGREGAR_ARCHIVO,operacion)){
+        if (comando_valido(cant_elem,comando,AGREGAR)){
+            return agregar_archivo(abb,hash,comando[1]);
+        }
     }
-    if (igual_comando(INFO_VUELOS,comando[0])){
-        char* num_vuelo = comando[1];
-        if (!num_vuelo || comando[2]) return false;
-        return info_vuelo(hash,num_vuelo);
+    else if (igual_comando(VER_TABLERO,operacion)){
+        if (comando_valido(cant_elem,comando,VER)){
+            return ver_tablero(abb,atoi(comando[1]),comando[2],comando[3],comando[4]);
+        }
     }
-    if (igual_comando(PRIORIDAD_VUELOS,comando[0])){
-        if (!comando[1] || comando[2]) return false;
-        if (!es_natural(comando[1])) return false;
-        int prioridad = atoi(comando[1]);
-        return prioridad_vuelos(hash,prioridad);
+    else if (igual_comando(INFO_VUELOS,operacion)){
+        if (comando_valido(cant_elem,comando,INFO)){
+            return info_vuelo(hash,comando[1]);
+        }
     }
-    if (igual_comando(BORRAR,comando[0])){
-        if (!comando[1] || !comando[2] || comando[3]) return false;
-        
-        char* desde = comando[1];
-        char* hasta = comando[2];
-
-        if (strcmp(desde,hasta) > 0) return false;
-        return borrar(abb,hash,desde,hasta);
+    else if (igual_comando(PRIORIDAD_VUELOS,operacion)){
+        if (comando_valido(cant_elem,comando,PRIORIDAD)){
+            return prioridad_vuelos(hash,atoi(comando[1]));
+        }
+    }
+    else if (igual_comando(BORRAR_VUELOS,operacion)){
+        if (comando_valido(cant_elem,comando,AGREGAR)){
+            return borrar(abb,hash,comando[1],comando[2]);
+        }
     }          
     return false;   
 }
