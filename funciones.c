@@ -31,7 +31,9 @@ typedef struct vuelo{
 /*************************
  * FUNCIONES AUXILIARES
  * **********************/
+
 char* rstrip(char* s){
+    /* Borra el /n de la linea s*/
     size_t tam;
     char *fin;
 
@@ -49,6 +51,8 @@ char* rstrip(char* s){
 }
 
 bool solicitar_linea(char* linea){
+    /* Solicita al usuario que ingrese una linea, le quita el caracter de fin de línea
+    y guarda la misma en el char* pasado por parámetro*/
     printf("Ingrese un comando: \n");
     gets(linea);
     linea = rstrip(linea);
@@ -56,14 +60,20 @@ bool solicitar_linea(char* linea){
 }
 
 bool quedan_vuelos(abb_t* abb){
+    /* Devuelve true si no quedan vuelos sin borrar o false de manera contraria*/
     return abb_cantidad(abb) != 0;
 }
 
 bool igual_comando(const char* a, const char* b){
+    /* Compara si los dos comandos pasados por parámetro son iguales y si
+    es así, devuelve true. De lo contrario, devuelve false.*/
     return strcmp(a,b) == 0
 }
 
-bool comando_valido(int cant_elem, char* linea[]){   return -1;
+bool comando_valido(int cant_elem, char* linea[]){
+    /* Verifica que al comando ingresado por stdin le corresponda
+    la cantidad de parámetros que necesita según cuál sea. Devuelve true si
+    la cantidad de parámetros ingresada es válida y false de lo contrario*/
     if (cant_elem == 0)  return false;
 
     if !(cant_elem == 1){
@@ -84,6 +94,7 @@ bool comando_valido(int cant_elem, char* linea[]){   return -1;
 }
 
 vuelo_t* vuelo_crear(char** datos){
+    /* Crea un vuelo a partir de los datos de un puntero a char* pasado por parámetro*/
     vuelo_t* vuelo = malloc(sizeof(vuelo_t));
     if (!vuelo) return NULL;
 
@@ -102,6 +113,7 @@ vuelo_t* vuelo_crear(char** datos){
 }
 
 void mensaje_error(char* comando){
+    /* Imprime un mensaje de error conteniendo el comando indicado*/
     fprintf(stderr,"%s %s\n","Error en comando",comando);
 }
 
@@ -121,32 +133,36 @@ void remover_salto_linea(char** vector){
     str[j] = '\0';
 }
 
-int len_vector(char** c_input){
+int len_vector(char** vector){
+    /* Devuelve el tamaño del vector*/
     int i = 0;
-    while (c_input[i] != NULL){
+    while (vector[i] != NULL){
         i++;
     }
     return i;
 }
 
 void imprimir_datos_vuelo(vuelo_t* vuelo){
-    printf("%s ",vuelo->numero_vuelo);
-    printf("%s ",vuelo->aerolinea);
-    printf("%s ",vuelo->aeropuerto_origen);
-    printf("%s ",vuelo->aeropuerto_destino);
-    printf("%s ",vuelo->matricula);
-    printf("%s ",vuelo->prioridad);
-    printf("%s ",vuelo->fecha);
-    printf("%s ",vuelo->retraso_salida);
-    printf("%s ",vuelo->tiempo_vuelo);
-    printf("%s\n",vuelo->cancelado);
+    /* Imprime todos los datos del vuelo en una sola línea*/
+    fprintf(stdout,("%s ",vuelo->numero_vuelo);
+    fprintf(stdout,("%s ",vuelo->aerolinea);
+    fprintf(stdout,("%s ",vuelo->aeropuerto_origen);
+    fprintf(stdout,("%s ",vuelo->aeropuerto_destino);
+    fprintf(stdout,("%s ",vuelo->matricula);
+    fprintf(stdout,("%s ",vuelo->prioridad);
+    fprintf(stdout,("%s ",vuelo->fecha);
+    fprintf(stdout,("%s ",vuelo->retraso_salida);
+    fprintf(stdout,("%s ",vuelo->tiempo_vuelo);
+    fprintf(stdout,("%s\n",vuelo->cancelado);
 }
 
 void imprimir_prioridad(vuelo_t* vuelo){
-    printf("%s - %s\n",vuelo->prioridad,vuelo->numero_vuelo);
+    /* Imprime la prioridad junto con el número de vuelo */
+    fprintf(stdout,"%s - %s\n",vuelo->prioridad,vuelo->numero_vuelo);
 }
 
-bool lista_insertar_ordenado(lista_t* lista, vuelo_t* vuelo){    
+bool lista_insertar_ordenado(lista_t* lista, vuelo_t* vuelo){
+    /* Inserta en una lista de manera ordenada comparando los números de vuelo*/    
     nodo_t* nodo = nodo_crear(vuelo);
     if (nodo == NULL) return false;
 
@@ -209,13 +225,13 @@ int main(){
                     char* desde = c_input[3];
                     char* hasta = c_input[4];
     
-	        case INFO_VUELOS:
+	        case INFO_VUELO:
 	        		int num_vuelo = atoi(c_input[1]);
                     info_vuelo(hash,num_vuelo,comando);
 
 	        case PRIORIDAD_VUELOS:
                 int cant_vuelos = atoi(c_input[1]);
-                void prioridad_vuelos(char* comando, int k, abb_t* abb)
+                prioridad_vuelos(comando, cant_vuelos, abb);
 
             case BORRAR:
 	        		char* desde = c_input[1];
@@ -272,7 +288,7 @@ void ver_tablero(char** comando, abb_t* abb){}
 void info_vuelo(hash_t* hash, char* num_vuelo, char* comando){
     
     if (hash_cantidad(hash) == 0){
-        printf("OK\n");
+        fprintf(stdout,("OK\n");
         return;
     }
     if (!hash_pertenece(num_vuelo)){
@@ -281,12 +297,12 @@ void info_vuelo(hash_t* hash, char* num_vuelo, char* comando){
     }
     vuelo_t* vuelo = hash_obtener(hash,num_vuelo);
     imprimir_datos_vuelo(vuelo);
-    printf("OK\n");
+    fprintf(stdout,("OK\n");
 }
 
 void prioridad_vuelos(char* comando, int k, abb_t* abb){
     if (abb_cantidad(abb) == 0){
-        printf("OK\n");
+        fprintf(stdout,("OK\n");
         return;
     }
 
@@ -305,6 +321,9 @@ void prioridad_vuelos(char* comando, int k, abb_t* abb){
 
     while (restantes >= 0){
         
+        // Si queda un sólo elemento por analizar, se encola en la lista en caso de que
+        // haya más elementos de igual prioridad con los que haya que ordenarlo.
+        // Si no hay ninguno, no cambia nada y simplemente lo borro e imprimo al final.
         if (restantes == 0){
             lista_insertar_ordenado(lista,actual);
             break;
@@ -313,33 +332,40 @@ void prioridad_vuelos(char* comando, int k, abb_t* abb){
         abb_iter_in_avanzar(iterador);
         siguiente = abb_obtener(abb, abb_iter_in_ver_actual(iterador));
 
-        if (actual->prioridad != siguiente->prioridad){
-            
+        if (actual->prioridad == siguiente->prioridad){
+            lista_insertar_ordenado(lista,actual);
+        
+        // distintas prioridades
+        } else {
+            // La lista no está vacía implica que "actual" tiene la misma prioridad que los vuelos de la lista
+            // y tengo que guardarla para que se ordene con ellas
             if (!lista_esta_vacia(lista)){
                 lista_insertar_ordenado(lista,actual);
+
+            // Si la lista está vacía, simplemente se imprime la prioridad actual y se considera "aislada"
             } else {
                 imprimir_prioridad(actual);
             }
 
+            // Se vacía la lista ya que el nuevo actual tendrá un número de prioridad diferente al guardado
             while (!lista_esta_vacia(lista)){
                 imprimir_prioridad(lista_borrar_primero(lista))
-                }
-            
-        } else {
-            lista_insertar_ordenado(lista,actual);
-            
+            }
+
         }
+        // se actualiza el actual
         actual = siguiente;
         restantes--;
     }
 
+    // Se vacían la lista en caso de aún contener elementos
     while (!lista_esta_vacia(lista)){
         imprimir_prioridad(lista_borrar_primero(lista))
     }
 
     lista_destruir(lista);
     abb_iter_in_destruir(iterador);
-    printf("OK\n");
+    fprintf(stdout,("OK\n");
 }
 
 void borrar(char** comando,hash_t* hash, abb_t* abb){}
