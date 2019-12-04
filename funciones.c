@@ -341,7 +341,6 @@ bool info_vuelo(hash_t* hash, char* num_vuelo){
     mensaje_exito(;
     return true;
 }
-}
 
 bool prioridad_vuelos(hash_t* hash, int k){
     heap_t* heap = heap_crear(cmp_prioridad_vuelo);
