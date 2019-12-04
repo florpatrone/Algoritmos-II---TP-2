@@ -164,6 +164,7 @@ void imprimir_datos_vuelo(vuelo_t* vuelo){
     fprintf(stdout,("%s\n",vuelo->cancelado);
 }
 }
+
 void imprimir_prioridad(vuelo_t* vuelo){
     /* Imprime la prioridad junto con el número de vuelo */
     fprintf(stdout,"%s - %s\n",vuelo->prioridad,vuelo->numero_vuelo);
@@ -324,9 +325,9 @@ bool agregar_archivo(abb_t* abb, hash_t* hash, char* nombre_archivo){
     return true;
 }
 
-bool ver_tablero(int cant_vuelos, char* modo, char* desde,char* hasta,abb_t* abb){
-    if (abb_cantidad(abb) == 0){
-        fprintf(stdout,("OK\n");
+bool ver_tablero(abb_t* abb, int cant_vuelos, char* modo, char* desde, char* hasta){
+    if (abb_cantidad(abb) == 0)){
+        fprintf(stdout,("OK\n"));
         return true;
     }
 
@@ -359,7 +360,7 @@ bool info_vuelo(hash_t* hash, char* num_vuelo){
 }
 }
 
-bool prioridad_vuelos(int k, hash_t* hash){
+bool prioridad_vuelos(hash_t* hash, int k){
     heap_t* heap = heap_crear(cmp_prioridad_vuelo);
     if (!heap)  return false;
 
