@@ -334,14 +334,14 @@ bool ver_tablero(int cant_vuelos, char* modo, char* desde,char* hasta,abb_t* abb
     if (!lista) return false;
     bool modo = strcmp(modo,"asc") == 0;   // true: asc or false: desc
     
-    buscar_guardar(lista, modo, raiz, desde, hasta);
+    buscar_guardar(lista, modo, abb->raiz, desde, hasta);
     if (lista_esta_vacia(lista))    return false;
 
     while (!lista_esta_vacia(lista)){
         imprimir_en_tablero(lista_borrar_primero(lista));
     }
     lista_destruir(lista);
-    
+
     fprintf(stdout,("OK\n");
     return true;
 

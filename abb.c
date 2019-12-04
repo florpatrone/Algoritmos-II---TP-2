@@ -34,7 +34,6 @@ struct abb_iter{
 /***************************
 * Primitivas del nodo
 ****************************/
-
 nodo_abb_t* crear_nodo(const char *clave,void *dato){
 	nodo_abb_t* nodo = malloc(sizeof(nodo_abb_t));
 	if (!nodo)	return NULL;
