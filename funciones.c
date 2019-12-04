@@ -234,11 +234,11 @@ int main(){
     
 	        case INFO_VUELOS:
 	        		int num_vuelo = atoi(c_input[1]);
-                    info_vuelo(hash,num_vuelo,comando);
+                    if (!info_vuelo(hash,num_vuelo,comando))    mensaje_error(comando);
 
 	        case PRIORIDAD_VUELOS:
                 int cant_vuelos = atoi(c_input[1]);
-                prioridad_vuelos(comando, cant_vuelos, abb);
+                if (!prioridad_vuelos(comando, cant_vuelos, abb))   mensaje_error(comando);
 
             case BORRAR:
 	        		char* desde = c_input[1];
@@ -359,19 +359,15 @@ void ver_tablero(char** comando, abb_t* abb){
 
 }
 
-void info_vuelo(hash_t* hash, char* num_vuelo, char* comando){
+bool info_vuelo(hash_t* hash, char* num_vuelo, char* comando){
     
-    if (hash_cantidad(hash) == 0){
-        fprintf(stdout,("OK\n");
-        return;
-    }
-    if (!hash_pertenece(num_vuelo)){
-        mensaje_error(comando);
-        return;
-    }
+    if (hash_cantidad(hash) == 0)   return false;
+    if (!hash_pertenece(num_vuelo)) return false;
+
     vuelo_t* vuelo = hash_obtener(hash,num_vuelo);
     imprimir_datos_vuelo(vuelo);
     fprintf(stdout,("OK\n");
+    return true;
 }
 
 bool prioridad_vuelos(char* comando, int k, hash_t* hash){
