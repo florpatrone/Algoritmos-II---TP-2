@@ -73,7 +73,6 @@ char* rstrip(char* s){
 
 /* Solicita al usuario que ingrese una linea, le quita el caracter de fin de línea
 y guarda la misma en el char* pasado por parámetro */
-
 /*
 bool solicitar_linea(char* linea){
     printf("Ingrese un comando: \n");
@@ -163,17 +162,16 @@ int len_vector(char** vector){
 
 void imprimir_datos_vuelo(vuelo_t* vuelo){
     /* Imprime todos los datos del vuelo en una sola línea*/
-    fprintf(stdout,("%s ",vuelo->numero_vuelo);
-    fprintf(stdout,("%s ",vuelo->aerolinea);
-    fprintf(stdout,("%s ",vuelo->aeropuerto_origen);
-    fprintf(stdout,("%s ",vuelo->aeropuerto_destino);
-    fprintf(stdout,("%s ",vuelo->matricula);
-    fprintf(stdout,("%s ",vuelo->prioridad);
-    fprintf(stdout,("%s ",vuelo->fecha);
-    fprintf(stdout,("%s ",vuelo->retraso_salida);
-    fprintf(stdout,("%s ",vuelo->tiempo_vuelo);
-    fprintf(stdout,("%s\n",vuelo->cancelado);
-}
+    fprintf(stdout,"%s ",vuelo->numero_vuelo);
+    fprintf(stdout,"%s ",vuelo->aerolinea);
+    fprintf(stdout,"%s ",vuelo->aeropuerto_origen);
+    fprintf(stdout,"%s ",vuelo->aeropuerto_destino);
+    fprintf(stdout,"%s ",vuelo->matricula);
+    fprintf(stdout,"%s ",vuelo->prioridad);
+    fprintf(stdout,"%s ",vuelo->fecha);
+    fprintf(stdout,"%s ",vuelo->retraso_salida);
+    fprintf(stdout,"%s ",vuelo->tiempo_vuelo);
+    fprintf(stdout,"%s\n",vuelo->cancelado);
 }
 
 void imprimir_prioridad(vuelo_t* vuelo){
@@ -181,38 +179,10 @@ void imprimir_prioridad(vuelo_t* vuelo){
     fprintf(stdout,"%s - %s\n",vuelo->prioridad,vuelo->numero_vuelo);
 }
 
-bool lista_insertar_ordenado(lista_t* lista, vuelo_t* vuelo){
-    /* Inserta en una lista de manera ordenada comparando los números de vuelo*/    
-    nodo_t* nodo = nodo_crear(vuelo);
-    if (nodo == NULL) return false;
+int cmp_prioridad_vuelo(void* void_a, void* void_b){
+    vuelo_t* vuelo_a = (vuelo_t*) void_a;
+    vuelo_t* vuelo_b = (vuelo_t*) void_b;
 
-    lista_iter_t* iter = lista_iter_crear(lista);
-    if (!iter)     return false;
-
-    if (lista_esta_vacia(lista)){
-        if (lista_iter_insertar(lista,nodo)){
-            lista->longitud++;
-            return true;
-        }
-        return false;
-    }
-
-    vuelo_t* actual;
-    while (!lista_iter_al_final(iter)){
-        actual = lista_iter_ver_actual(iter);
-        if (vuelo->numero_vuelo > actual->numero_vuelo){
-            if(!lista_iter_insertar(lista,nodo))    return false;
-            break;
-        }
-        if (!lista_iter_avanzar(iter))  return false;
-    }
-    if (!lista_iter_insertar(lista,nodo))   return false;
-    lista->longitud++;
-    lista_iter_destruir(iter);
-    return true;
-}
-
-int cmp_prioridad_vuelo(vuelo_t* vuelo_a, vuelo_t* vuelo_b){
     if (vuelo_a->prioridad == vuelo_b->prioridad){
         return vuelo_a->numero_vuelo > vuelo_b->numero_vuelo ? 1 : -1;
     }
@@ -243,7 +213,9 @@ void buscar_guardar(lista_t* lista, bool modo_asc, nodo_abb_t* raiz, char* desde
     }
 }
 
-int cmp_fechas(char* fecha_a, char* fecha_b){
+int cmp_fechas(void* void_a, void* void_b){
+    char* fecha_a = (char*) void_a;
+    char* fecha_b = (char*) void_b;
     return strcmp(fecha_a,fecha_b);
 }
 
@@ -338,7 +310,7 @@ bool agregar_archivo(abb_t* abb, hash_t* hash, char* nombre_archivo){
 
 bool ver_tablero(abb_t* abb, int cant_vuelos, char* modo, char* desde, char* hasta){
     if (abb_cantidad(abb) == 0)){
-        fprintf(stdout,("OK\n"));
+        mensaje_exito();
         return true;
     }
 
@@ -354,7 +326,7 @@ bool ver_tablero(abb_t* abb, int cant_vuelos, char* modo, char* desde, char* has
     }
     lista_destruir(lista);
 
-    fprintf(stdout,("OK\n");
+    mensaje_exito(;
     return true;
 
 }
@@ -366,7 +338,7 @@ bool info_vuelo(hash_t* hash, char* num_vuelo){
 
     vuelo_t* vuelo = hash_obtener(hash,num_vuelo);
     imprimir_datos_vuelo(vuelo);
-    fprintf(stdout,("OK\n");
+    mensaje_exito(;
     return true;
 }
 }
@@ -430,7 +402,7 @@ bool prioridad_vuelos(hash_t* hash, int k){
     }
 
     lista_destruir(lista);
-    fprintf(stdout, "OK\n");
+    mensaje_exito();
     return true;
 }
 
