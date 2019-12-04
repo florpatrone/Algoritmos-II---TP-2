@@ -198,6 +198,39 @@ int cmp_prioridad_vuelo(vuelo_t* vuelo_a, vuelo_t* vuelo_b){
     }
     return vuelo_a->prioridad > vuelo_b->prioridad ? 1 : -1;
 }
+
+/*Recibe por parámetro una lista, un modo de guardado, un ABB y dos fechas de cota.
+Busca en el ABB aquellos vuelos que se encuentren dentro de la cota pedida y los agrega a la lista según 
+si se pide imprimir de manera ascendente (lista_insertar_ultimo) o descendente (lista_insertar_primero)*/
+void buscar_guardar(lista_t* lista, bool modo_asc, nodo_abb_t* raiz, char* desde, char* hasta){ 
+   if (!raiz) return;
+  
+    vuelo_t* vuelo = raiz->dato;
+    if (cmp_fechas(desde, vuelo->fecha) < 0){
+        buscar_guardar(lista, modo_asc, raiz->izq, desde, hasta); 
+    }
+
+    if (cmp_fechas(desde,vuelo->fecha)  <= 0 && cmp_fechas(hasta, vuelo->fecha) >= 0){
+        if (modo_asc){
+            lista_insertar_ultimo(lista,raiz);
+        } else {
+            lista_insertar_primero(lista, raiz);
+        }
+    }
+
+    if ( cmp_fechas(hasta, vuelo->fecha) > 0){
+        buscar_guardar(lista, modo_asc, raiz->right, desde, hasta); 
+    }
+}
+
+int cmp_fechas(char* fecha_a, char* fecha_b){
+    return strcmp(fecha_a,fecha_b);
+}
+
+void imprimir_en_tablero(vuelo_t* vuelo){
+    fprintf(stdout, "%s - %s\n",vuelo->fecha, vuelo->numero_vuelo);
+}
+
 /*************************
  * FUNCIONES PRINCIPALES
  * **********************/
@@ -231,14 +264,15 @@ int main(){
                     char* modo = c_input[2];
                     char* desde = c_input[3];
                     char* hasta = c_input[4];
+                    if (!ver_tablero(cant_vuelos,modo,desde,hasta,abb)) mensaje_error(comando);
     
 	        case INFO_VUELOS:
 	        		int num_vuelo = atoi(c_input[1]);
-                    if (!info_vuelo(hash,num_vuelo,comando))    mensaje_error(comando);
+                    if (!info_vuelo(hash,num_vuelo))    mensaje_error(comando);
 
 	        case PRIORIDAD_VUELOS:
                 int cant_vuelos = atoi(c_input[1]);
-                if (!prioridad_vuelos(comando, cant_vuelos, abb))   mensaje_error(comando);
+                if (!prioridad_vuelos(cant_vuelos, hash))   mensaje_error(comando);
 
             case BORRAR:
 	        		char* desde = c_input[1];
@@ -290,76 +324,30 @@ void agregar_archivo(char* comando, char* nombre, hash_t* hash, abb_t* abb){
     fclose(archivo);
 }
 
-void ver_tablero(char** comando, abb_t* abb){
-    /*if (abb_cantidad(abb) == 0){
+bool ver_tablero(int cant_vuelos, char* modo, char* desde,char* hasta,abb_t* abb){
+    if (abb_cantidad(abb) == 0){
         fprintf(stdout,("OK\n");
-        return;
+        return true;
     }
 
     lista_t* lista = lista_crear();
-    if (!lista){
-        mensaje_error(comando);
-        return;
-    }
+    if (!lista) return false;
+    bool modo = strcmp(modo,"asc") == 0;   // true: asc or false: desc
+    
+    buscar_guardar(lista, modo, raiz, desde, hasta);
+    if (lista_esta_vacia(lista))    return false;
 
-    abb_iter_t* iterador = abb_iter_in_crear(abb);
-    vuelo_t* actual;
-    vuelo_t* siguiente;
-
-    actual = abb_obtener(abb, abb_iter_in_ver_actual(iterador));
-    int restantes = k - 1;
-
-    while (restantes >= 0){
-        
-        // Si queda un sólo elemento por analizar, se encola en la lista en caso de que
-        // haya más elementos de igual prioridad con los que haya que ordenarlo.
-        // Si no hay ninguno, no cambia nada y simplemente lo borro e imprimo al final.
-        if (restantes == 0){
-            lista_insertar_ordenado(lista,actual);
-            break;
-        }
-            
-        abb_iter_in_avanzar(iterador);
-        siguiente = abb_obtener(abb, abb_iter_in_ver_actual(iterador));
-
-        if (actual->prioridad == siguiente->prioridad){
-            lista_insertar_ordenado(lista,actual);
-        
-        // distintas prioridades
-        } else {
-            // La lista no está vacía implica que "actual" tiene la misma prioridad que los vuelos de la lista
-            // y tengo que guardarla para que se ordene con ellas
-            if (!lista_esta_vacia(lista)){
-                lista_insertar_ordenado(lista,actual);
-
-            // Si la lista está vacía, simplemente se imprime la prioridad actual y se considera "aislada"
-            } else {
-                imprimir_prioridad(actual);
-            }
-
-            // Se vacía la lista ya que el nuevo actual tendrá un número de prioridad diferente al guardado
-            while (!lista_esta_vacia(lista)){
-                imprimir_prioridad(lista_borrar_primero(lista))
-            }
-
-        }
-        // se actualiza el actual
-        actual = siguiente;
-        restantes--;
-    }
-
-    // Se vacían la lista en caso de aún contener elementos
     while (!lista_esta_vacia(lista)){
-        imprimir_prioridad(lista_borrar_primero(lista))
+        imprimir_en_tablero(lista_borrar_primero(lista));
     }
-
     lista_destruir(lista);
-    abb_iter_in_destruir(iterador);
-    fprintf(stdout,("OK\n");*/
+    
+    fprintf(stdout,("OK\n");
+    return true;
 
 }
 
-bool info_vuelo(hash_t* hash, char* num_vuelo, char* comando){
+bool info_vuelo(hash_t* hash, char* num_vuelo){
     
     if (hash_cantidad(hash) == 0)   return false;
     if (!hash_pertenece(num_vuelo)) return false;
@@ -370,7 +358,7 @@ bool info_vuelo(hash_t* hash, char* num_vuelo, char* comando){
     return true;
 }
 
-bool prioridad_vuelos(char* comando, int k, hash_t* hash){
+bool prioridad_vuelos(int k, hash_t* hash){
     heap_t* heap = heap_crear(cmp_prioridad_vuelo);
     if (!heap)  return false;
 
@@ -423,7 +411,7 @@ bool prioridad_vuelos(char* comando, int k, hash_t* hash){
 
     heap_destruir(heap,NULL);
     hash_iter_destruir(hash_iter);
-    
+
     while (!lista_esta_vacia(lista)){
         imprimir_prioridad(lista_borrar_primero(lista));
     }
