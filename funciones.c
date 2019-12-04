@@ -422,6 +422,8 @@ bool prioridad_vuelos(char* comando, int k, hash_t* hash){
     }
 
     heap_destruir(heap,NULL);
+    hash_iter_destruir(hash_iter);
+    
     while (!lista_esta_vacia(lista)){
         imprimir_prioridad(lista_borrar_primero(lista));
     }
