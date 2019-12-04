@@ -1,11 +1,4 @@
 #define _POSIX_C_SOURCE 200809L
-#include <string.h>
-#include <stdbool.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include "heap.h"
-#include "funciones.h"
-#include "lista.c"
 #define AGREGAR_ARCHIVO "agregar_archivo"
 #define VER_TABLERO "ver_tablero"
 #define INFO_VUELOS "info_vuelos"
@@ -13,6 +6,15 @@
 #define BORRAR "borrar"
 #define ASC "asc"
 #define DESC "desc"
+
+#include <string.h>
+#include <stdbool.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include "heap.h"
+#include "funciones.h"
+#include "funciones.h"
+#include "lista.c"
 
 typedef struct vuelo{
     char* numero_vuelo;
@@ -27,10 +29,18 @@ typedef struct vuelo{
     char* cancelado;
 } vuelo_t;
 
-
 /*************************
  * FUNCIONES AUXILIARES
  * **********************/
+
+void mensaje_exito(void){
+    fprintf(stdout,"%s \n","OK");
+}
+
+void mensaje_error(char* comando){
+    /* Imprime un mensaje de error conteniendo el comando indicado*/
+    fprintf(stderr,"%s %s\n","Error en comando",comando);
+}
 
 char* rstrip(char* s){
     /* Borra el /n de la linea s*/
@@ -50,14 +60,17 @@ char* rstrip(char* s){
     return s;
 }
 
+/* Solicita al usuario que ingrese una linea, le quita el caracter de fin de línea
+y guarda la misma en el char* pasado por parámetro */
+
+/*
 bool solicitar_linea(char* linea){
-    /* Solicita al usuario que ingrese una linea, le quita el caracter de fin de línea
-    y guarda la misma en el char* pasado por parámetro*/
     printf("Ingrese un comando: \n");
     gets(linea);
     linea = rstrip(linea);
     return linea != NULL;
 }
+*/
 
 bool quedan_vuelos(abb_t* abb){
     /* Devuelve true si no quedan vuelos sin borrar o false de manera contraria*/
@@ -67,7 +80,7 @@ bool quedan_vuelos(abb_t* abb){
 bool igual_comando(const char* a, const char* b){
     /* Compara si los dos comandos pasados por parámetro son iguales y si
     es así, devuelve true. De lo contrario, devuelve false.*/
-    return strcmp(a,b) == 0
+    return strcmp(a,b) == 0;
 }
 
 bool comando_valido(int cant_elem, char* linea[]){
@@ -112,11 +125,6 @@ vuelo_t* vuelo_crear(char** datos){
     return vuelo;
 }
 
-void mensaje_error(char* comando){
-    /* Imprime un mensaje de error conteniendo el comando indicado*/
-    fprintf(stderr,"%s %s\n","Error en comando",comando);
-}
-
 void remover_salto_linea(char** vector){
     int i = 0;
     
@@ -155,7 +163,7 @@ void imprimir_datos_vuelo(vuelo_t* vuelo){
     fprintf(stdout,("%s ",vuelo->tiempo_vuelo);
     fprintf(stdout,("%s\n",vuelo->cancelado);
 }
-
+}
 void imprimir_prioridad(vuelo_t* vuelo){
     /* Imprime la prioridad junto con el número de vuelo */
     fprintf(stdout,"%s - %s\n",vuelo->prioridad,vuelo->numero_vuelo);
@@ -202,6 +210,7 @@ int cmp_prioridad_vuelo(vuelo_t* vuelo_a, vuelo_t* vuelo_b){
  * FUNCIONES PRINCIPALES
  * **********************/
 
+/*
 int main(){
     
     printf("Bienvenido/a\n");
@@ -215,8 +224,6 @@ int main(){
 
     char* comando = c_input[0];
 
-    hash_t* hash = hash_crear();
-    abb_t* abb = abb_crear(strcmp);
     bool hay_vuelos = true;
 
     while (comando || hay_vuelos){
@@ -255,42 +262,35 @@ int main(){
     hash_destruir(hash);
     abb_destruir(abb);
 }
+*/
 
-void agregar_archivo(char* comando, char* nombre, hash_t* hash, abb_t* abb){
-    //if (!comando[1] || !comando[2]){
-    //    mensaje_error(comando[0]);
-    //    return;
-    //}
-    
-    FILE* archivo = fopen(nombre,"r");
+bool agregar_archivo(abb_t* abb, hash_t* hash, char* nombre_archivo){
+    FILE* archivo = fopen(nombre_archivo,"r");
     if (!archivo){
-        mensaje_error(comando);
-        return;
+        return false;
     }
     
     char* linea = NULL;
 	size_t n = 0;
-
     while ((getline(&linea, &n, archivo)) > 0){
         char** datos = split(linea,',');
-        if (!datos){
-            mensaje_error(comando);
-            break;
-        }
+        if (!datos) return false;
+    
+        remover_salto_linea(datos);
         vuelo_t* vuelo = vuelo_crear(datos);
         if (!vuelo){
-            mensaje_error(comando);
             free_strv(datos);
-            break;
+            return false;
         }
-        free(datos);
+        free_strv(datos);
         abb_guardar(abb,vuelo->fecha,vuelo);
         hash_guardar(hash,vuelo->numero_vuelo,vuelo);
     }
     fclose(archivo);
+    return true;
 }
 
-void ver_tablero(char** comando, abb_t* abb){
+bool ver_tablero(abb_t* abb, int cant_vuelos, char* modo, char* desde, char* hasta){
     /*if (abb_cantidad(abb) == 0){
         fprintf(stdout,("OK\n");
         return;
@@ -359,7 +359,7 @@ void ver_tablero(char** comando, abb_t* abb){
 
 }
 
-bool info_vuelo(hash_t* hash, char* num_vuelo, char* comando){
+bool info_vuelo(hash_t* hash, char* num_vuelo){
     
     if (hash_cantidad(hash) == 0)   return false;
     if (!hash_pertenece(num_vuelo)) return false;
@@ -369,8 +369,9 @@ bool info_vuelo(hash_t* hash, char* num_vuelo, char* comando){
     fprintf(stdout,("OK\n");
     return true;
 }
+}
 
-bool prioridad_vuelos(char* comando, int k, hash_t* hash){
+bool prioridad_vuelos(hash_t* hash, int k){
     heap_t* heap = heap_crear(cmp_prioridad_vuelo);
     if (!heap)  return false;
 
@@ -433,13 +434,47 @@ bool prioridad_vuelos(char* comando, int k, hash_t* hash){
     return true;
 }
 
-void borrar(char** comando,hash_t* hash, abb_t* abb){}
+bool borrar(abb_t* abb, hash_t* hash, char* desde, char* hasta){}
 
-//void ejecutar_comando(char** comando, hash_t* hash, abb_t* abb){
-//    if ((strcmp(comando[0],"agregar_archivo")) == 0) agregar_archivo(comando,hash,abb);
-//    else if ((strcmp(comando[0],"ver_tablero")) == 0) ver_tablero(comando,abb);
-//    else if ((strcmp(comando[0],"info_vuelo")) == 0) info_vuelo(comando,hash);
-//    else if ((strcmp(comando[0],"prioridad_vuelos")) == 0) prioridad_vuelos(comando,abb);
-//    else if ((strcmp(comando[0],"borrar") == 0)) borrar(comando,hash,abb);
-//    else{ mensaje_error(comando[0]);}
-//}
+bool ejecutar_comando(char** comando, hash_t* hash, abb_t* abb){
+    if (igual_comando(AGREGAR_ARCHIVO,comando[0])){
+        char* nombre_archivo = comando[1];
+        if (!nombre_archivo || comando[2]) return false;
+        return agregar_archivo(abb,hash,nombre_archivo);
+    }
+    if (igual_comando(VER_TABLERO,comando[0])){
+        for (int i = 1; i < 5; i++) if (!comando[i]) return false;
+        if (comando[5]) return false;
+
+        char* cant_vuelos = comando[1];
+        char* modo = comando[2];
+        char* desde = comando[3];
+        char* hasta = comando[4];
+        
+        if (!es_natural(cant_vuelos)) return false;
+        if (! (igual_comando(ASC,modo) || igual_comando(DESC,modo)) ) return false;
+        if (strcmp(desde,hasta) > 0) return false;
+        return ver_tablero(abb,atoi(cant_vuelos),modo,desde,hasta);
+    }
+    if (igual_comando(INFO_VUELOS,comando[0])){
+        char* num_vuelo = comando[1];
+        if (!num_vuelo || comando[2]) return false;
+        return info_vuelo(hash,num_vuelo);
+    }
+    if (igual_comando(PRIORIDAD_VUELOS,comando[0])){
+        if (!comando[1] || comando[2]) return false;
+        if (!es_natural(comando[1])) return false;
+        int prioridad = atoi(comando[1]);
+        return prioridad_vuelos(hash,prioridad);
+    }
+    if (igual_comando(BORRAR,comando[0])){
+        if (!comando[1] || !comando[2] || comando[3]) return false;
+        
+        char* desde = comando[1];
+        char* hasta = comando[2];
+
+        if (strcmp(desde,hasta) > 0) return false;
+        return borrar(abb,hash,desde,hasta);
+    }          
+    return false;   
+}

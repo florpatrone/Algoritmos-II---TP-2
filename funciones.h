@@ -2,18 +2,20 @@
 #include "abb.h"
 #include "strutil.h"
 
-typedef struct vuelo vuelo_t;
+bool agregar_archivo(abb_t* abb, hash_t* hash, char* nombre_archivo);
 
-void agregar_archivo(char** comando, hash_t* hash, abb_t* abb);
+bool ver_tablero(abb_t* abb, int cant_vuelos, char* modo, char* desde, char* hasta);
 
-void ver_tablero(char** comando, abb_t* abb);
+bool info_vuelo(hash_t* hash, char* num_vuelo);
 
-void info_vuelo(char** comando, hash_t* hash);
+bool prioridad_vuelos(hash_t* hash, int k);
 
-void prioridad_vuelos(char** comando, abb_t* abb);
+bool borrar(abb_t* abb, hash_t* hash, char* desde, char* hasta);
 
-void borrar(char** comando,hash_t* hash, abb_t* abb);
-
-void ejecutar_comando(char** comando, hash_t* hash, abb_t* abb);
+bool ejecutar_comando(char** comando, hash_t* hash, abb_t* abb);
 
 void remover_salto_linea(char** vector);
+
+void mensaje_exito(void);
+
+void mensaje_error(char* comando);
