@@ -11,6 +11,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <ctype.h>
 #include "heap.h"
 #include "funciones.h"
 #include "funciones.h"
@@ -40,6 +41,16 @@ void mensaje_exito(void){
 void mensaje_error(char* comando){
     /* Imprime un mensaje de error conteniendo el comando indicado*/
     fprintf(stderr,"%s %s\n","Error en comando",comando);
+}
+
+bool es_natural(const char* str){
+    int i = 0;
+    while (str[i] != '\0'){
+        if (!isdigit(str[i])) return false;
+        i++;
+    }
+    if ((i == 1) && (str[0] == '0')) return false;
+    return i > 0;
 }
 
 char* rstrip(char* s){
