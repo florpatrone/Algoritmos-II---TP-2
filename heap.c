@@ -52,7 +52,7 @@ void upheap(void** vector, size_t pos_elem, cmp_func_t cmp){
     size_t pos_padre = (pos_elem-1)/2;
     void* elem = vector[pos_elem];
     void* padre = vector[pos_padre];
-    if (cmp(elem,padre) > 0){
+    if (cmp(elem,padre) < 0){
         swap(vector,pos_padre,pos_elem);
         upheap(vector,pos_padre,cmp);
     }
@@ -64,8 +64,8 @@ void downheap(void** vector, size_t tam, size_t pos, cmp_func_t cmp){
 	size_t izq = 2 * pos + 1;
 	size_t der = 2 * pos + 2;
     
-	if (izq < tam && cmp(vector[izq], vector[max]) > 0)     max = izq;
-	if (der < tam && cmp(vector[der], vector[max]) > 0)     max = der;
+	if (izq < tam && cmp(vector[izq], vector[max]) < 0)     max = izq;
+	if (der < tam && cmp(vector[der], vector[max]) < 0)     max = der;
     
 	if (max != pos){
 		swap(vector,pos,max);
@@ -119,7 +119,7 @@ bool heap_encolar(heap_t *heap, void *elem){
     return true;
 }
 
-void *heap_ver_max(const heap_t *heap){
+void *heap_ver_tope(const heap_t *heap){
     if (heap_esta_vacio(heap)) return NULL;
     return heap->datos[0];
 }
@@ -141,6 +141,7 @@ heap_t *heap_crear_arr(void *arreglo[], size_t n, cmp_func_t cmp){
     return heap;
 }
 
+/* Ordena de mayor a menor */
 void heap_sort(void *elementos[], size_t cant, cmp_func_t cmp){
     heapify(elementos,cant,cmp);
     size_t pos_final = cant - 1;

@@ -191,6 +191,13 @@ bool lista_insertar_ordenado(lista_t* lista, vuelo_t* vuelo){
     lista_iter_destruir(iter);
     return true;
 }
+
+int cmp_prioridad_vuelo(vuelo_t* vuelo_a, vuelo_t* vuelo_b){
+    if (vuelo_a->prioridad == vuelo_b->prioridad){
+        return vuelo_a->numero_vuelo > vuelo_b->numero_vuelo ? 1 : -1;
+    }
+    return vuelo_a->prioridad > vuelo_b->prioridad ? 1 : -1;
+}
 /*************************
  * FUNCIONES PRINCIPALES
  * **********************/
@@ -225,7 +232,7 @@ int main(){
                     char* desde = c_input[3];
                     char* hasta = c_input[4];
     
-	        case INFO_VUELO:
+	        case INFO_VUELOS:
 	        		int num_vuelo = atoi(c_input[1]);
                     info_vuelo(hash,num_vuelo,comando);
 
@@ -283,25 +290,8 @@ void agregar_archivo(char* comando, char* nombre, hash_t* hash, abb_t* abb){
     fclose(archivo);
 }
 
-void ver_tablero(char** comando, abb_t* abb){}
-
-void info_vuelo(hash_t* hash, char* num_vuelo, char* comando){
-    
-    if (hash_cantidad(hash) == 0){
-        fprintf(stdout,("OK\n");
-        return;
-    }
-    if (!hash_pertenece(num_vuelo)){
-        mensaje_error(comando);
-        return;
-    }
-    vuelo_t* vuelo = hash_obtener(hash,num_vuelo);
-    imprimir_datos_vuelo(vuelo);
-    fprintf(stdout,("OK\n");
-}
-
-void prioridad_vuelos(char* comando, int k, abb_t* abb){
-    if (abb_cantidad(abb) == 0){
+void ver_tablero(char** comando, abb_t* abb){
+    /*if (abb_cantidad(abb) == 0){
         fprintf(stdout,("OK\n");
         return;
     }
@@ -365,7 +355,84 @@ void prioridad_vuelos(char* comando, int k, abb_t* abb){
 
     lista_destruir(lista);
     abb_iter_in_destruir(iterador);
+    fprintf(stdout,("OK\n");*/
+
+}
+
+void info_vuelo(hash_t* hash, char* num_vuelo, char* comando){
+    
+    if (hash_cantidad(hash) == 0){
+        fprintf(stdout,("OK\n");
+        return;
+    }
+    if (!hash_pertenece(num_vuelo)){
+        mensaje_error(comando);
+        return;
+    }
+    vuelo_t* vuelo = hash_obtener(hash,num_vuelo);
+    imprimir_datos_vuelo(vuelo);
     fprintf(stdout,("OK\n");
+}
+
+bool prioridad_vuelos(char* comando, int k, hash_t* hash){
+    heap_t* heap = heap_crear(cmp_prioridad_vuelo);
+    if (!heap)  return false;
+
+    hash_iter_t* hash_iter = hash_iter_crear(hash);
+    if (!hash_iter){
+        heap_destruir(heap,NULL);
+        return false;
+    }
+
+    vuelo_t* vuelo;
+    char* clave_vuelo;
+
+    for (size_t i = 0; i < k; i++){
+        clave_vuelo = hash_iter_ver_actual(hash_iter);
+        vuelo = hash_obtener(clave_vuelo);
+        heap_encolar(heap, vuelo);
+
+        if (!hash_iter_avanzar(hash_iter)){
+            heap_destruir(heap);
+            hash_iter_destruir(hash_iter);
+            return false;
+            }
+    }
+
+    for (size_t i = k; !hash_iter_al_final(hash_iter); i++){
+        clave_vuelo = hash_iter_ver_actual(hash_iter);
+        vuelo = hash_obtener(clave_vuelo);
+        if (cmp_prioridad_vuelo(vuelo,heap_ver_tope(heap))){
+            heap_desencolar(heap);
+            heap_encolar(heap, vuelo);
+        }
+        if (!hash_iter_avanzar(hash_iter)){
+            heap_destruir(heap);
+            hash_iter_destruir(hash_iter);
+            return false;
+            }
+    }
+
+    lista_t* lista = lista_crear();
+    if (!lista){
+        heap_destruir(heap);
+        hash_iter_destruir(hash_iter);
+        return false;
+    }
+
+    while (!heap_esta_vacio(heap)){
+        vuelo = heap_ver_tope(heap);
+        lista_insertar_ultimo(vuelo);
+    }
+
+    heap_destruir(heap,NULL);
+    while (!lista_esta_vacia(lista)){
+        imprimir_prioridad(lista_borrar_primero(lista));
+    }
+
+    lista_destruir(lista);
+    fprintf(stdout, "OK\n");
+    return true;
 }
 
 void borrar(char** comando,hash_t* hash, abb_t* abb){}
