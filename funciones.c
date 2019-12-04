@@ -45,6 +45,10 @@ void mensaje_error(char* comando){
     fprintf(stderr,"%s %s\n","Error en comando",comando);
 }
 
+bool rango_valido(const char* inicio, const char* fin){
+    return strcmp(inicio,fin) <= 0;
+}
+
 bool es_natural(const char* str){
     int i = 0;
     while (str[i] != '\0'){
