@@ -414,7 +414,27 @@ bool prioridad_vuelos(hash_t* hash, int k){
     return true;
 }
 
-bool borrar(abb_t* abb, hash_t* hash, char* desde, char* hasta){}
+bool borrar(abb_t* abb, hash_t* hash, char* desde, char* hasta){
+    abb_t* iter = abb_iter_in_crear(abb);
+    if (!iter) return false;
+
+    char* actual = abb_iter_in_ver_actual(iter);
+
+    while (!abb_iter_in_al_final(iter) && strcmp(actual,desde) < 0){
+        abb_iter_in_avanzar(iter);
+        actual = abb_iter_in_ver_actual(iter);
+    }
+    while (!abb_iter_in_al_final(iter) && !(strcmp(actual,hasta) > 0)){
+        vuelo_t* vuelo = abb_borrar(abb,actual);
+        char* num_vuelo = vuelo->numero_vuelo;
+        hash_borrar(hash,num_vuelo);
+        imprimir_datos_vuelo(vuelo);
+        abb_iter_in_avanzar(iter);
+        actual = abb_iter_in_ver_actual(iter);
+    }
+    abb_iter_in_destruir(iter);
+    return true;
+}
 
 bool ejecutar_comando(char** comando, hash_t* hash, abb_t* abb){
     int cant_elem = len_vector(comando);
