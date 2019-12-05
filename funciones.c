@@ -144,6 +144,20 @@ vuelo_t* vuelo_crear(char** datos){
     return vuelo;
 }
 
+void vuelo_destruir(vuelo_t* vuelo){
+    free(vuelo->numero_vuelo);
+    free(vuelo->aerolinea);
+    free(vuelo->aeropuerto_origen);
+    free(vuelo->aeropuerto_destino);
+    free(vuelo->matricula);
+    free(vuelo->prioridad);
+    free(vuelo->fecha);
+    free(vuelo->retraso_salida);
+    free(vuelo->tiempo_vuelo);
+    free(vuelo->cancelado);
+    free(vuelo);
+}
+
 void remover_salto_linea(char** vector){
     int i = 0;
     

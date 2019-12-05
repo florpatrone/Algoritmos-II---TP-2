@@ -19,3 +19,5 @@ void remover_salto_linea(char** vector);
 void mensaje_exito(void);
 
 void mensaje_error(char* comando);
+
+void vuelo_destruir(vuelo_t* vuelo);
