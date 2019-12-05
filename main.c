@@ -6,7 +6,7 @@
 #include <string.h>
 
 int main(int argc, char const *argv[]){
-    hash_t* hash = hash_crear(free);
+    hash_t* hash = hash_crear(NULL);
     abb_t* abb = abb_crear(strcmp,NULL);
 
     char* linea = NULL;

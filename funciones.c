@@ -302,7 +302,6 @@ bool agregar_archivo(abb_t* abb, hash_t* hash, char* nombre_archivo){
     while ((getline(&linea, &n, archivo)) > 0){
         char** datos = split(linea,',');
         if (!datos) return false;
-    
         remover_salto_linea(datos);
         vuelo_t* vuelo = vuelo_crear(datos);
         if (!vuelo){
@@ -310,14 +309,14 @@ bool agregar_archivo(abb_t* abb, hash_t* hash, char* nombre_archivo){
             return false;
         }
         free_strv(datos);
-        abb_guardar(abb,vuelo->fecha,vuelo);
         hash_guardar(hash,vuelo->numero_vuelo,vuelo);
+        abb_guardar(abb,vuelo->fecha,vuelo->numero_vuelo);
     }
     fclose(archivo);
     return true;
 }
 
-bool ver_tablero(abb_t* abb, int cant_vuelos, char* modo, char* desde, char* hasta){
+bool ver_tablero(abb_t* abb,  hash_t* hash, int cant_vuelos, char* modo, char* desde, char* hasta){
     if (abb_cantidad(abb) == 0)){
         mensaje_exito();
         return true;
@@ -425,12 +424,12 @@ bool borrar(abb_t* abb, hash_t* hash, char* desde, char* hasta){
         actual = abb_iter_in_ver_actual(iter);
     }
     while (!abb_iter_in_al_final(iter) && !(strcmp(actual,hasta) > 0)){
-        vuelo_t* vuelo = abb_borrar(abb,actual);
-        char* num_vuelo = vuelo->numero_vuelo;
-        hash_borrar(hash,num_vuelo);
+        char* num_vuelo = abb_borrar(abb,actual);
+        vuelo_t* vuelo = hash_borrar(hash,num_vuelo);
         imprimir_datos_vuelo(vuelo);
         abb_iter_in_avanzar(iter);
         actual = abb_iter_in_ver_actual(iter);
+        vuelo_destruir(vuelo);
     }
     abb_iter_in_destruir(iter);
     return true;
@@ -447,7 +446,7 @@ bool ejecutar_comando(char** comando, hash_t* hash, abb_t* abb){
     }
     else if (igual_comando(VER_TABLERO,operacion)){
         if (comando_valido(cant_elem,comando,VER)){
-            return ver_tablero(abb,atoi(comando[1]),comando[2],comando[3],comando[4]);
+            return ver_tablero(abb,hash,atoi(comando[1]),comando[2],comando[3],comando[4]);
         }
     }
     else if (igual_comando(INFO_VUELOS,operacion)){
