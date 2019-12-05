@@ -58,7 +58,7 @@ typedef struct abb_iter abb_iter_t;
 
 /* Crea un iterador del arbol que señala al primer
 elemento inorder del mismo.*/
-abb_iter_t *abb_iter_in_crear(const abb_t *arbol);
+abb_iter_t *abb_iter_in_crear(const abb_t *arbol, char* inicio, char* fin);
 
 /* Avanza una posición del iterador de manera INORDER y
 devuelve true. Si no puede avanzar o el árbol está vacío

@@ -28,7 +28,10 @@ struct abb{
 
 struct abb_iter{
 	const abb_t* abb;
+	char* inicio;
+	char* fin;
 	pila_t* pila;
+    abb_comparar_clave_t cmp;
 };
 
 /***************************
@@ -237,7 +240,7 @@ void abb_destruir(abb_t *arbol){
 * Primitivas del iterador externo
 **********************************/
 
-abb_iter_t *abb_iter_in_crear(const abb_t *arbol){
+abb_iter_t *abb_iter_in_crear(const abb_t *arbol, char* inicio, char* fin){
 	abb_iter_t* iter = malloc(sizeof(abb_iter_t));
 	if (!iter) return NULL;
 	
@@ -249,16 +252,25 @@ abb_iter_t *abb_iter_in_crear(const abb_t *arbol){
 	
 	nodo_abb_t* nodo = arbol->raiz;
 	while(nodo){
-		if (!pila_apilar(pila,nodo)){
-			free(iter);
-			pila_destruir(pila);
-			return NULL;
+		if (arbol->cmp(nodo->clave,inicio) < 0){
+			nodo = nodo->der;
+			continue;
+		}
+		
+		if (!(arbol->cmp(nodo->clave,fin) > 0)){
+			if (!pila_apilar(pila,nodo)){
+				free(iter);
+				pila_destruir(pila);
+				return NULL;
+			}
 		}
 		nodo = nodo->izq;
 	}
-
+	iter->inicio = strdup(inicio);
+	iter->fin = strdup(fin);
 	iter->pila = pila;
 	iter->abb = arbol;
+	iter->cmp = arbol->cmp;
 	return iter;
 }
 
@@ -266,11 +278,16 @@ bool abb_iter_in_avanzar(abb_iter_t *iter){
 	nodo_abb_t* desapilado = pila_desapilar(iter->pila);
 	if (!desapilado)	return false;
 
-	if (desapilado->der){
-		pila_apilar(iter->pila, desapilado->der);
-		nodo_abb_t* hijo_izq = desapilado->der->izq;
+	nodo_abb_t* hijo_der = desapilado->der;
+	if (hijo_der){
+		if (iter->cmp(hijo_der->clave,iter->fin) <= 0){
+			pila_apilar(iter->pila, hijo_der);
+		}
+		nodo_abb_t* hijo_izq = hijo_der->izq;
 		while (hijo_izq){
-			pila_apilar(iter->pila, hijo_izq);
+			if ((iter->cmp(hijo_izq->clave,iter->fin) <= 0)){
+				pila_apilar(iter->pila, hijo_izq);
+			}
 			hijo_izq = hijo_izq->izq;
 		}
 	}
@@ -289,6 +306,8 @@ bool abb_iter_in_al_final(const abb_iter_t *iter){
 
 void abb_iter_in_destruir(abb_iter_t* iter){
 	pila_destruir(iter->pila);
+	free(iter->inicio);
+	free(iter->fin);
 	free(iter);
 }
 
