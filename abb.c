@@ -10,14 +10,12 @@
 enum posicion{IZQUIERDA,RAIZ,DERECHA};
 typedef enum posicion posicion_t;
 
-struct nodo{
-    struct nodo* izq;
-    struct nodo* der; 
+struct nodo_abb {
+    struct nodo_abb* izq;
+    struct nodo_abb* der; 
     char* clave;
     void* dato;
 };
-
-typedef struct nodo nodo_abb_t;
 
 struct abb{
     nodo_abb_t* raiz;
@@ -54,6 +52,22 @@ void destruir_nodo(nodo_abb_t* nodo){
 /***************************
 * Funciones Auxiliares
 ****************************/
+
+nodo_abb_t* abb_ver_raiz(abb_t* abb){
+	return (nodo_abb_t*) abb->raiz;
+}
+
+void* abb_ver_dato_nodo(nodo_abb_t* nodo){
+	return nodo->dato;
+}
+
+nodo_abb_t* abb_nodo_ver_izq(nodo_abb_t* raiz){
+	return raiz->izq;
+}
+
+nodo_abb_t* abb_nodo_ver_der(nodo_abb_t* raiz){
+	return raiz->der;
+}
 
 bool abb_buscar_y(bool pertenencia, bool guardado, const abb_t *abb, nodo_abb_t* raiz, const char *clave, void *dato){
 	if (!raiz)	return false;

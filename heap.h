@@ -73,7 +73,7 @@ bool heap_encolar(heap_t *heap, void *elem);
  * NULL.
  * Pre: el heap fue creado.
  */
-void *heap_ver_max(const heap_t *heap);
+void *heap_ver_tope(const heap_t *heap);
 
 /* Elimina el elemento con máxima prioridad, y lo devuelve.
  * Si el heap esta vacío, devuelve NULL.

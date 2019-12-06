@@ -1,6 +1,7 @@
 #define _POSIX_C_SOURCE 200809L
 
 #include "funciones.h"
+#include "funciones_auxiliares.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -15,7 +16,12 @@ int main(int argc, char const *argv[]){
         char** comando = split(linea,' ');
         remover_salto_linea(comando);
         bool operacion_valida = ejecutar_comando(comando,hash,abb);
-        operacion_valida ? mensaje_exito() : mensaje_error(comando[0]);
+        
+        if (operacion_valida){
+            mensaje_exito();
+        } else {
+            mensaje_error(comando[0]);
+        }
     }  
     hash_destruir(hash);
     abb_destruir(abb);
