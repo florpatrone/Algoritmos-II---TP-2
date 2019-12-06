@@ -16,6 +16,7 @@ int main(int argc, char const *argv[]){
         remover_salto_linea(comando);
         bool operacion_valida = ejecutar_comando(comando,hash,abb);
         operacion_valida ? mensaje_exito() : mensaje_error(comando[0]);
+        free_strv(comando);
     }  
     hash_destruir(hash);
     abb_destruir(abb);

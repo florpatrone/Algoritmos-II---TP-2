@@ -20,4 +20,4 @@ void mensaje_exito(void);
 
 void mensaje_error(char* comando);
 
-void vuelo_destruir(vuelo_t* vuelo);
+void vuelo_destruir(void* vuelo);

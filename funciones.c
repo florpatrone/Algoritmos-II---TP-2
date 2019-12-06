@@ -13,9 +13,8 @@
 #include <stdio.h>
 #include <ctype.h>
 #include "heap.h"
+#include "lista.h"
 #include "funciones.h"
-#include "funciones.h"
-#include "lista.c"
 
 enum operacion{AGREGAR,VER,INFO,PRIORIDAD,BORRAR};
 
@@ -144,7 +143,7 @@ vuelo_t* vuelo_crear(char** datos){
     return vuelo;
 }
 
-void vuelo_destruir(vuelo_t* vuelo){
+void _vuelo_destruir(vuelo_t* vuelo){
     free(vuelo->numero_vuelo);
     free(vuelo->aerolinea);
     free(vuelo->aeropuerto_origen);
@@ -156,6 +155,10 @@ void vuelo_destruir(vuelo_t* vuelo){
     free(vuelo->tiempo_vuelo);
     free(vuelo->cancelado);
     free(vuelo);
+}
+
+void vuelo_destruir(void* vuelo){
+    _vuelo_destruir(vuelo);
 }
 
 void remover_salto_linea(char** vector){
@@ -322,7 +325,6 @@ bool agregar_archivo(abb_t* abb, hash_t* hash, char* nombre_archivo){
             free_strv(datos);
             return false;
         }
-        free_strv(datos);
         hash_guardar(hash,vuelo->numero_vuelo,vuelo);
         abb_guardar(abb,vuelo->fecha,vuelo->numero_vuelo);
     }
@@ -428,23 +430,17 @@ bool prioridad_vuelos(hash_t* hash, int k){
 }
 
 bool borrar(abb_t* abb, hash_t* hash, char* desde, char* hasta){
-    abb_t* iter = abb_iter_in_crear(abb);
+    abb_iter_t* iter = abb_iter_in_crear(abb,desde,hasta);
     if (!iter) return false;
 
-    char* actual = abb_iter_in_ver_actual(iter);
 
-    while (!abb_iter_in_al_final(iter) && strcmp(actual,desde) < 0){
-        abb_iter_in_avanzar(iter);
-        actual = abb_iter_in_ver_actual(iter);
-    }
-    while (!abb_iter_in_al_final(iter) && !(strcmp(actual,hasta) > 0)){
-        char* num_vuelo = abb_borrar(abb,actual);
+    while (!abb_iter_in_al_final(iter)){
+        char* num_vuelo = abb_borrar(abb,abb_iter_in_ver_actual(iter));
         vuelo_t* vuelo = hash_borrar(hash,num_vuelo);
         imprimir_datos_vuelo(vuelo);
         abb_iter_in_avanzar(iter);
-        actual = abb_iter_in_ver_actual(iter);
         vuelo_destruir(vuelo);
-    }
+    }       
     abb_iter_in_destruir(iter);
     return true;
 }
