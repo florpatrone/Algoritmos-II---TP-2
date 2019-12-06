@@ -25,7 +25,7 @@ struct vuelo{
     char* aeropuerto_origen;
     char* aeropuerto_destino;
     char* matricula;
-    char* prioridad;
+    int* prioridad;
     char* fecha;
     char* retraso_salida;
     char* tiempo_vuelo;
@@ -118,12 +118,19 @@ vuelo_t* vuelo_crear(char** datos){
     vuelo_t* vuelo = malloc(sizeof(vuelo_t));
     if (!vuelo) return NULL;
 
+    int* prioridad = malloc(sizeof(int));
+    if (!prioridad){
+        free(vuelo);
+        return NULL;
+    }
+    free(datos[5]);
+
     vuelo->numero_vuelo = datos[0];
     vuelo->aerolinea = datos[1];
     vuelo->aeropuerto_origen = datos[2];
     vuelo->aeropuerto_destino = datos[3];
     vuelo->matricula = datos[4];
-    vuelo->prioridad = datos[5];
+    vuelo->prioridad = prioridad;
     vuelo->fecha = datos[6];
     vuelo->retraso_salida = datos[7];
     vuelo->tiempo_vuelo = datos[8];
@@ -179,7 +186,7 @@ void imprimir_datos_vuelo(vuelo_t* vuelo){
     fprintf(stdout,"%s ",vuelo->aeropuerto_origen);
     fprintf(stdout,"%s ",vuelo->aeropuerto_destino);
     fprintf(stdout,"%s ",vuelo->matricula);
-    fprintf(stdout,"%s ",vuelo->prioridad);
+    fprintf(stdout,"%i ",*vuelo->prioridad);
     fprintf(stdout,"%s ",vuelo->fecha);
     fprintf(stdout,"%s ",vuelo->retraso_salida);
     fprintf(stdout,"%s ",vuelo->tiempo_vuelo);
@@ -188,17 +195,17 @@ void imprimir_datos_vuelo(vuelo_t* vuelo){
 
 void imprimir_prioridad(vuelo_t* vuelo){
     /* Imprime la prioridad junto con el número de vuelo */
-    fprintf(stdout,"%s - %s\n",vuelo->prioridad,vuelo->numero_vuelo);
+    fprintf(stdout,"%i - %s\n",*vuelo->prioridad,vuelo->numero_vuelo);
 }
 
 int cmp_prioridad_vuelo(const void* void_a, const void* void_b){
     vuelo_t* vuelo_a = (vuelo_t*) void_a;
     vuelo_t* vuelo_b = (vuelo_t*) void_b;
 
-    if (vuelo_a->prioridad == vuelo_b->prioridad){
-        return vuelo_a->numero_vuelo > vuelo_b->numero_vuelo ? 1 : -1;
+    if (*vuelo_a->prioridad == *vuelo_b->prioridad){
+        return strcmp(vuelo_a->numero_vuelo,vuelo_b->numero_vuelo) < 0 ? 1 : -1;
     }
-    return vuelo_a->prioridad > vuelo_b->prioridad ? 1 : -1;
+    return *vuelo_a->prioridad > *vuelo_b->prioridad ? 1 : -1;
 }
 
 
@@ -336,7 +343,7 @@ bool prioridad_vuelos(hash_t* hash, int k){
 
     hash_iter_t* hash_iter = hash_iter_crear(hash);
     if (!hash_iter){
-        heap_destruir(heap,vuelo_destruir);
+        heap_destruir(heap,NULL);
         return false;
     }
 
@@ -349,29 +356,29 @@ bool prioridad_vuelos(hash_t* hash, int k){
         heap_encolar(heap, vuelo);
 
         if (!hash_iter_avanzar(hash_iter)){
-            heap_destruir(heap,vuelo_destruir);
+            heap_destruir(heap,NULL);
             hash_iter_destruir(hash_iter);
             return false;
-            }
+        }
     }
 
     for (size_t i = k; !hash_iter_al_final(hash_iter); i++){
         clave_vuelo = hash_iter_ver_actual(hash_iter);
         vuelo = hash_obtener(hash, clave_vuelo);
-        if (cmp_prioridad_vuelo(vuelo,heap_ver_tope(heap))){
+        if (cmp_prioridad_vuelo(vuelo,heap_ver_tope(heap)) > 0){
             heap_desencolar(heap);
             heap_encolar(heap, vuelo);
         }
         if (!hash_iter_avanzar(hash_iter)){
-            heap_destruir(heap,vuelo_destruir);
+            heap_destruir(heap,NULL);
             hash_iter_destruir(hash_iter);
             return false;
-            }
+        }
     }
 
     lista_t* lista = lista_crear();
     if (!lista){
-        heap_destruir(heap,vuelo_destruir);
+        heap_destruir(heap,NULL);
         hash_iter_destruir(hash_iter);
         return false;
     }
@@ -381,14 +388,14 @@ bool prioridad_vuelos(hash_t* hash, int k){
         lista_insertar_ultimo(lista, vuelo);
     }
 
-    heap_destruir(heap,vuelo_destruir);
+    heap_destruir(heap,NULL);
     hash_iter_destruir(hash_iter);
 
     while (!lista_esta_vacia(lista)){
         imprimir_prioridad(lista_borrar_primero(lista));
     }
 
-    lista_destruir(lista,vuelo_destruir);
+    lista_destruir(lista,NULL);
     return true;
 }
 
