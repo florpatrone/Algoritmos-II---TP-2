@@ -1,3 +1,6 @@
+#ifndef FUNCIONES_H
+#define FUNCIONES_H
+
 #include "hash.h"
 #include "abb.h"
 #include "strutil.h"
@@ -12,12 +15,5 @@ bool prioridad_vuelos(hash_t* hash, int k);
 
 bool borrar(abb_t* abb, hash_t* hash, char* desde, char* hasta);
 
-bool ejecutar_comando(char** comando, hash_t* hash, abb_t* abb);
 
-void remover_salto_linea(char** vector);
-
-void mensaje_exito(void);
-
-void mensaje_error(char* comando);
-
-void vuelo_destruir(void* vuelo);
+#endif

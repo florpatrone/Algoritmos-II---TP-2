@@ -1,3 +1,6 @@
+#ifndef LISTA_H
+#define LISTA_H
+
 #include <stdbool.h>
 #include <stddef.h>
 
@@ -113,3 +116,5 @@ void *lista_iter_borrar(lista_iter_t *iter);
 // Visitar es una funcion que devuelve un booleano.
 // Post: se aplico la funcion visitar a cada elemento de la lista, mientras que visitar devolviera true.
 void lista_iterar(lista_t *lista, bool visitar(void *dato, void *extra), void *extra);
+
+#endif

@@ -5,6 +5,7 @@
 #include <stddef.h>
 
 typedef struct abb abb_t;
+typedef struct nodo_abb nodo_abb_t;
 typedef int (*abb_comparar_clave_t) (const char *, const char *);
 typedef void (*abb_destruir_dato_t) (void *);
 
@@ -79,5 +80,18 @@ void abb_iter_in_destruir(abb_iter_t* iter);
 
 /* Aplica la función "visitar" nodo a nodo de modo INORDER */
 void abb_in_order(abb_t *arbol, bool visitar(const char *, void *, void *), void *extra);
+
+
+/******************
+Primitivas Extra 
+******************/
+nodo_abb_t* abb_ver_raiz(abb_t* abb);
+
+nodo_abb_t* abb_nodo_ver_izq(nodo_abb_t *raiz);
+
+nodo_abb_t* abb_nodo_ver_der(nodo_abb_t *raiz);
+
+void* abb_ver_dato_nodo(nodo_abb_t* nodo);
+
 
 #endif
