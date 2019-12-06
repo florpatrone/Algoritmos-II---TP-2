@@ -1,7 +1,7 @@
 #define _POSIX_C_SOURCE 200809L
 #define AGREGAR_ARCHIVO "agregar_archivo"
 #define VER_TABLERO "ver_tablero"
-#define INFO_VUELOS "info_vuelos"
+#define INFO_VUELOS "info_vuelo"
 #define PRIORIDAD_VUELOS "prioridad_vuelos"
 #define BORRAR_VUELOS "borrar"
 #define ASC "asc"
@@ -300,7 +300,6 @@ bool agregar_archivo(abb_t* abb, hash_t* hash, char* nombre_archivo){
 
 bool ver_tablero(abb_t* abb,  hash_t* hash, int cant_vuelos, char* param_modo, char* desde, char* hasta){
     if (abb_cantidad(abb) == 0){
-        mensaje_exito();
         return true;
     }
 
@@ -317,7 +316,6 @@ bool ver_tablero(abb_t* abb,  hash_t* hash, int cant_vuelos, char* param_modo, c
     }
     lista_destruir(lista,vuelo_destruir);
 
-    mensaje_exito();
     return true;
 
 }
@@ -329,7 +327,6 @@ bool info_vuelo(hash_t* hash, char* num_vuelo){
 
     vuelo_t* vuelo = hash_obtener(hash,num_vuelo);
     imprimir_datos_vuelo(vuelo);
-    mensaje_exito();
     return true;
 }
 
@@ -392,7 +389,6 @@ bool prioridad_vuelos(hash_t* hash, int k){
     }
 
     lista_destruir(lista,vuelo_destruir);
-    mensaje_exito();
     return true;
 }
 
