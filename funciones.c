@@ -25,7 +25,7 @@ struct vuelo{
     char* aeropuerto_origen;
     char* aeropuerto_destino;
     char* matricula;
-    int* prioridad;
+    char* prioridad;
     char* fecha;
     char* retraso_salida;
     char* tiempo_vuelo;
@@ -95,19 +95,20 @@ vuelo_t* vuelo_crear(char** datos){
     vuelo_t* vuelo = malloc(sizeof(vuelo_t));
     if (!vuelo) return NULL;
 
-    int* prioridad = malloc(sizeof(int));
-    if (!prioridad){
-        free(vuelo);
-        return NULL;
-    }
-    free(datos[5]);
+    //int* prioridad = malloc(sizeof(int));
+    //if (!prioridad){
+    //    free(vuelo);
+    //    return NULL;
+    //}
+    //prioridad = (atoi(datos[5]));
+    //free(datos[5]);
 
     vuelo->numero_vuelo = datos[0];
     vuelo->aerolinea = datos[1];
     vuelo->aeropuerto_origen = datos[2];
     vuelo->aeropuerto_destino = datos[3];
     vuelo->matricula = datos[4];
-    vuelo->prioridad = prioridad;
+    vuelo->prioridad = datos[5];
     vuelo->fecha = datos[6];
     vuelo->retraso_salida = datos[7];
     vuelo->tiempo_vuelo = datos[8];
@@ -172,19 +173,20 @@ void imprimir_datos_vuelo(vuelo_t* vuelo){
 
 void imprimir_prioridad(vuelo_t* vuelo){
     /* Imprime la prioridad junto con el número de vuelo */
-    fprintf(stdout,"%i - %s\n",*vuelo->prioridad,vuelo->numero_vuelo);
+    fprintf(stdout,"%d - %s\n",atoi(vuelo->prioridad),vuelo->numero_vuelo);
 }
 
 int cmp_prioridad_vuelo(const void* void_a, const void* void_b){
     vuelo_t* vuelo_a = (vuelo_t*) void_a;
     vuelo_t* vuelo_b = (vuelo_t*) void_b;
 
-    if (*vuelo_a->prioridad == *vuelo_b->prioridad){
-        return strcmp(vuelo_a->numero_vuelo,vuelo_b->numero_vuelo) < 0 ? 1 : -1;
+    if (atoi( (const char*)vuelo_a->prioridad) == atoi( (const char*)vuelo_b->prioridad)){
+        printf("las prioridades de %s y %s son iguales\n",vuelo_a->numero_vuelo,vuelo_b->numero_vuelo);
+        return strcmp(vuelo_a->numero_vuelo,vuelo_b->numero_vuelo);
     }
-    return *vuelo_a->prioridad > *vuelo_b->prioridad ? 1 : -1;
+    printf("las prioridades de %s y %s son diferentes\n",vuelo_a->numero_vuelo,vuelo_b->numero_vuelo);
+    return atoi( (const char*)vuelo_a->prioridad) > atoi( (const char*)vuelo_b->prioridad) ? 1 : -1;
 }
-
 
 void buscar_guardar(lista_t* lista, bool modo_asc, nodo_abb_t* raiz, char* desde, char* hasta){ 
     if (!raiz){
@@ -249,7 +251,7 @@ bool ejecutar_comando(char** comando, hash_t* hash, abb_t* abb){
         printf("ingresa a IF == ver_tablero\n");
         if (comando_valido(cant_elem,comando,VER)){
             printf("Es comando válido\n");
-            return ver_tablero(abb,hash,atoi(comando[1]),comando[2],comando[3],comando[4]);
+            return ver_tablero(abb,hash,atoi( (const char*)comando[1]),comando[2],comando[3],comando[4]);
         }
     }
     else if (igual_comando(INFO_VUELOS,operacion)){
@@ -260,7 +262,7 @@ bool ejecutar_comando(char** comando, hash_t* hash, abb_t* abb){
     else if (igual_comando(PRIORIDAD_VUELOS,operacion)){
         
         if (comando_valido(cant_elem,comando,PRIORIDAD)){
-            return prioridad_vuelos(hash,atoi(comando[1]));
+            return prioridad_vuelos(hash,atoi( (const char*)comando[1]));
         }
     }
     else if (igual_comando(BORRAR_VUELOS,operacion)){
@@ -342,6 +344,7 @@ bool info_vuelo(hash_t* hash, char* num_vuelo){
 }
 
 bool prioridad_vuelos(hash_t* hash, int k){
+    if (hash_cantidad(hash) == 0)   return true;
 
     printf("prioridad vuelos\n");
     heap_t* heap = heap_crear(cmp_prioridad_vuelo);
@@ -356,12 +359,14 @@ bool prioridad_vuelos(hash_t* hash, int k){
     vuelo_t* vuelo;
     const char* clave_vuelo;
 
-    for (size_t i = 0; i < k || !hash_iter_al_final(hash_iter); i++){
+    for (size_t i = 0; i < k && !hash_iter_al_final(hash_iter); i++){
         clave_vuelo = hash_iter_ver_actual(hash_iter);
         printf("clave vuelo: %s\n",clave_vuelo);
         vuelo = hash_obtener(hash, clave_vuelo);
         if (vuelo)  printf("vuelo no NULL\n");
-        if (!heap_encolar(heap, &vuelo))    printf("EL heap no encola\n");
+        printf("número de vuelo: %s\n",vuelo->numero_vuelo);
+        imprimir_datos_vuelo(vuelo);
+        if (!heap_encolar(heap, vuelo))    printf("EL heap no encola\n");
         printf("el heap encola\n");
 
         if (!hash_iter_avanzar(hash_iter)){
@@ -373,16 +378,20 @@ bool prioridad_vuelos(hash_t* hash, int k){
         printf("el iterador avanza\n");
     }
     printf("Sale del FOR guardando K elementos\n");
-    for (size_t i = k; !hash_iter_al_final(hash_iter); i++){
+    vuelo_t* min;
+    while (!hash_iter_al_final(hash_iter)){
         clave_vuelo = hash_iter_ver_actual(hash_iter);
         vuelo = hash_obtener(hash, clave_vuelo);
-        printf("MODIFICANDO HEAP\n");
-        printf("clave vuelo: %s\n",clave_vuelo);
-        printf("comp prioridad vuelo = %d\n", cmp_prioridad_vuelo(vuelo,heap_ver_tope(heap)));
-        if (cmp_prioridad_vuelo(vuelo,heap_ver_tope(heap)) > 0){
+        printf("clave vuelo: %s, prioridad vuelo: %s \n",clave_vuelo, vuelo->prioridad);
+        min = heap_ver_tope(heap);
+        printf("comp prioridad vuelo = %d\n", cmp_prioridad_vuelo(vuelo,min));
+
+        if (cmp_prioridad_vuelo(vuelo,min) > 0){
+            printf("desencola y encola nuevo vuelo\n");
             heap_desencolar(heap);
             heap_encolar(heap, vuelo);
         }
+
         if (!hash_iter_avanzar(hash_iter)){
             heap_destruir(heap,NULL);
             hash_iter_destruir(hash_iter);
@@ -398,8 +407,8 @@ bool prioridad_vuelos(hash_t* hash, int k){
     }
 
     while (!heap_esta_vacio(heap)){
-        vuelo = heap_ver_tope(heap);
-        lista_insertar_ultimo(lista, vuelo);
+        vuelo = heap_desencolar(heap);
+        lista_insertar_primero(lista, vuelo);
     }
 
     heap_destruir(heap,NULL);
