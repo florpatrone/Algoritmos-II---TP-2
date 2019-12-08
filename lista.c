@@ -139,6 +139,7 @@ void lista_destruir(lista_t *lista, void destruir_dato(void *)){
     free(lista);
 }
 
+
 /* *****************************************************************
  *                    PRIMITIVAS DEL ITERADOR EXTERNO
  * *****************************************************************/

@@ -7,6 +7,5 @@
 #include "funciones.h"
 
 int acciones(){
-    main();
-    
+    return 0;
 }

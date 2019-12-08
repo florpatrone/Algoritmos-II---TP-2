@@ -53,8 +53,12 @@ void destruir_nodo(nodo_abb_t* nodo){
 * Funciones Auxiliares
 ****************************/
 
-nodo_abb_t* abb_ver_raiz(abb_t* abb){
+nodo_abb_t* abb_raiz(abb_t* abb){
 	return (nodo_abb_t*) abb->raiz;
+}
+
+char* abb_ver_clave_nodo(nodo_abb_t* nodo){
+	return nodo->clave;
 }
 
 void* abb_ver_dato_nodo(nodo_abb_t* nodo){

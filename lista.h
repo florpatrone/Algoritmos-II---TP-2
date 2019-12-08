@@ -65,6 +65,12 @@ size_t lista_largo(const lista_t *lista);
 // Post: se eliminaron todos los elementos de la lista.
 void lista_destruir(lista_t *lista, void destruir_dato(void *));
 
+// Agrega un nuevo elemento string de manera ordenada en la lista. Devuelve false en caso de error.
+// Pre: la lista fue creada.
+// Post: se agrego un nuevo elemento a la lista y se encuentra posicionado
+// de manera ordenada
+bool lista_insertar_ordenado(lista_t* lista, char* dato);
+
 /* ******************************************************************
  *                    PRIMITIVAS DEL ITERADOR EXTERNO
  * *****************************************************************/

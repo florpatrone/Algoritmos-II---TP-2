@@ -43,8 +43,12 @@ si se pide imprimir de manera ascendente (lista_insertar_ultimo) o descendente (
 
 int cmp_fechas(const void* void_a, const void* void_b);
 
-void imprimir_en_tablero(vuelo_t* vuelo);
+void imprimir_en_tablero(nodo_abb_t* nodo_abb);
 
 bool ejecutar_comando(char** comando, hash_t* hash, abb_t* abb);
+
+bool imprimir_vuelo_fecha(const char* clave, void * dato, void * nada);
+
+int cmp_fechas_abb(const char* fecha1, const char* fecha2);
 
 #endif // AUX_H

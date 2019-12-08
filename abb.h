@@ -85,11 +85,13 @@ void abb_in_order(abb_t *arbol, bool visitar(const char *, void *, void *), void
 /******************
 Primitivas Extra 
 ******************/
-nodo_abb_t* abb_ver_raiz(abb_t* abb);
+nodo_abb_t* abb_raiz(abb_t* abb);
 
 nodo_abb_t* abb_nodo_ver_izq(nodo_abb_t *raiz);
 
 nodo_abb_t* abb_nodo_ver_der(nodo_abb_t *raiz);
+
+char* abb_ver_clave_nodo(nodo_abb_t* nodo);
 
 void* abb_ver_dato_nodo(nodo_abb_t* nodo);
 
