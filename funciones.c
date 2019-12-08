@@ -181,43 +181,33 @@ int cmp_prioridad_vuelo(const void* void_a, const void* void_b){
     vuelo_t* vuelo_b = (vuelo_t*) void_b;
 
     if (atoi( (const char*)vuelo_a->prioridad) == atoi( (const char*)vuelo_b->prioridad)){
-        printf("las prioridades de %s y %s son iguales\n",vuelo_a->numero_vuelo,vuelo_b->numero_vuelo);
         return strcmp(vuelo_a->numero_vuelo,vuelo_b->numero_vuelo);
     }
-    printf("las prioridades de %s y %s son diferentes\n",vuelo_a->numero_vuelo,vuelo_b->numero_vuelo);
     return atoi( (const char*)vuelo_a->prioridad) > atoi( (const char*)vuelo_b->prioridad) ? 1 : -1;
 }
 
 void buscar_guardar(lista_t* lista, bool modo_asc, nodo_abb_t* raiz, char* desde, char* hasta){ 
     if (!raiz){
-        printf("no hay nodo\n");
         return;
     }
     nodo_abb_t* proximo;
     char* fecha = (char*) abb_ver_clave_nodo(raiz);
-    printf("\n**VUELO %s**\n",(char*)abb_ver_dato_nodo(raiz));
-
-    printf("desde: %s, fecha_vuelo = %s, cmp: %d\n",desde,fecha,cmp_fechas(desde, fecha));
+    printf("fecha analizada: %s\n",fecha);
     if (cmp_fechas(desde, fecha) < 0){
-        printf("%s va a la izquierda\n", (char*)abb_ver_dato_nodo(raiz));
         proximo = (nodo_abb_t*) abb_nodo_ver_izq(raiz);
+        printf("va hacia la izquierda: %s\n",proximo->clave);
         buscar_guardar(lista, modo_asc, proximo, desde, hasta); 
     }
 
-    printf("hasta: %s, fecha_vuelo = %s, cmp: %d\n",hasta,fecha,cmp_fechas(hasta, fecha));
     if (cmp_fechas(desde,fecha)  <= 0 && cmp_fechas(hasta, fecha) >= 0){
         if (modo_asc){
             lista_insertar_ultimo(lista,raiz);
-            printf("inserta en lista a: %s\n",(char*)abb_ver_dato_nodo(raiz));
         } else {
             lista_insertar_primero(lista, raiz);
-            printf("inserta en lista a: %s\n",(char*)abb_ver_dato_nodo(raiz));
         }
     }
 
-    
     if ( cmp_fechas(hasta, fecha) >= 0){
-        printf("%s va a la derecha\n", (char*)abb_ver_dato_nodo(raiz));
         proximo = (nodo_abb_t*) abb_nodo_ver_der(raiz);
         buscar_guardar(lista, modo_asc, proximo, desde, hasta); 
     }
@@ -228,7 +218,6 @@ int cmp_fechas(const void* void_a, const void* void_b){
     char* fecha_b = (char*) void_b;
     return strcmp(fecha_a,fecha_b);
 }
-
 
 void imprimir_en_tablero(nodo_abb_t* nodo_abb){
     char* fecha = abb_ver_clave_nodo(nodo_abb);
@@ -241,16 +230,13 @@ void imprimir_en_tablero(nodo_abb_t* nodo_abb){
 bool ejecutar_comando(char** comando, hash_t* hash, abb_t* abb){
     int cant_elem = len_vector(comando);
     char* operacion = comando[0];
-    printf("operacion: %s\n",operacion);
     if (igual_comando(AGREGAR_ARCHIVO,operacion)){
         if (comando_valido(cant_elem,comando,AGREGAR)){
             return agregar_archivo(abb,hash,comando[1]);
         }
     }
     else if (igual_comando(VER_TABLERO,operacion)){
-        printf("ingresa a IF == ver_tablero\n");
         if (comando_valido(cant_elem,comando,VER)){
-            printf("Es comando válido\n");
             return ver_tablero(abb,hash,atoi( (const char*)comando[1]),comando[2],comando[3],comando[4]);
         }
     }
@@ -286,7 +272,6 @@ bool agregar_archivo(abb_t* abb, hash_t* hash, char* nombre_archivo){
     char* linea = NULL;
 	size_t n = 0;
     while ((getline(&linea, &n, archivo)) > 0){
-        printf("linea leída: %s\n",linea);
         char** datos = split(linea,',');
         if (!datos) return false;
         remover_salto_linea(datos);
@@ -295,12 +280,10 @@ bool agregar_archivo(abb_t* abb, hash_t* hash, char* nombre_archivo){
             free_strv(datos);
             return false;
         }
-        printf("GUARDAR num vuelo: %s\n", vuelo->numero_vuelo);
         if (!hash_guardar(hash,vuelo->numero_vuelo,vuelo))  return false;
         if (!abb_guardar(abb,vuelo->fecha,vuelo->numero_vuelo)) return false;
     }
     fclose(archivo);
-    abb_in_order(abb, imprimir_vuelo_fecha, NULL);
     return true;
 }
 
@@ -308,22 +291,16 @@ bool ver_tablero(abb_t* abb,  hash_t* hash, int cant_vuelos, char* param_modo, c
     if (abb_cantidad(abb) == 0){
         return true;
     }
-    printf("cantidad abb > 0\n");
     lista_t* lista = lista_crear();
     if (!lista) return false;
     bool modo = strcmp(param_modo,"asc") == 0;   // true: asc or false: desc
-    if (modo){
-        printf("modo asc\n");
-    } else {
-        printf("modo desc\n");
-    }
     
     nodo_abb_t* raiz = abb_raiz(abb);
     buscar_guardar(lista, modo, raiz, desde, hasta);
     if (lista_esta_vacia(lista))    return true;
 
     size_t i = 0;
-    while (!lista_esta_vacia(lista) || i < cant_vuelos){
+    while (!lista_esta_vacia(lista) && i < cant_vuelos){
         imprimir_en_tablero(lista_borrar_primero(lista));
         i++;
     }
@@ -346,7 +323,6 @@ bool info_vuelo(hash_t* hash, char* num_vuelo){
 bool prioridad_vuelos(hash_t* hash, int k){
     if (hash_cantidad(hash) == 0)   return true;
 
-    printf("prioridad vuelos\n");
     heap_t* heap = heap_crear(cmp_prioridad_vuelo);
     if (!heap)  return false;
 
@@ -361,33 +337,22 @@ bool prioridad_vuelos(hash_t* hash, int k){
 
     for (size_t i = 0; i < k && !hash_iter_al_final(hash_iter); i++){
         clave_vuelo = hash_iter_ver_actual(hash_iter);
-        printf("clave vuelo: %s\n",clave_vuelo);
         vuelo = hash_obtener(hash, clave_vuelo);
-        if (vuelo)  printf("vuelo no NULL\n");
-        printf("número de vuelo: %s\n",vuelo->numero_vuelo);
-        imprimir_datos_vuelo(vuelo);
-        if (!heap_encolar(heap, vuelo))    printf("EL heap no encola\n");
-        printf("el heap encola\n");
+        if (!heap_encolar(heap, vuelo)) return false;
 
         if (!hash_iter_avanzar(hash_iter)){
-            printf("no pudo avanzar el iterador del hash\n");
             heap_destruir(heap,NULL);
             hash_iter_destruir(hash_iter);
             return false;
         }
-        printf("el iterador avanza\n");
     }
-    printf("Sale del FOR guardando K elementos\n");
     vuelo_t* min;
     while (!hash_iter_al_final(hash_iter)){
         clave_vuelo = hash_iter_ver_actual(hash_iter);
         vuelo = hash_obtener(hash, clave_vuelo);
-        printf("clave vuelo: %s, prioridad vuelo: %s \n",clave_vuelo, vuelo->prioridad);
         min = heap_ver_tope(heap);
-        printf("comp prioridad vuelo = %d\n", cmp_prioridad_vuelo(vuelo,min));
 
         if (cmp_prioridad_vuelo(vuelo,min) > 0){
-            printf("desencola y encola nuevo vuelo\n");
             heap_desencolar(heap);
             heap_encolar(heap, vuelo);
         }
@@ -434,11 +399,5 @@ bool borrar(abb_t* abb, hash_t* hash, char* desde, char* hasta){
         vuelo_destruir(vuelo);
     }       
     abb_iter_in_destruir(iter);
-    return true;
-}
-
-bool imprimir_vuelo_fecha(const char* clave, void * dato, void * nada){
-    printf("NODO:\n");
-    printf("clave: %s, dato: %s\n",clave,(char*)dato);
     return true;
 }
