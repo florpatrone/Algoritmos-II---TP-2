@@ -9,7 +9,7 @@
 
 int main(){
     hash_t* hash = hash_crear(vuelo_destruir);
-    abb_t* abb = abb_crear(strcmp,NULL);
+    abb_t* abb = abb_crear(strcmp,free);
 
     char* linea = NULL;
 	size_t n = 0;
@@ -20,7 +20,7 @@ int main(){
         if (operacion_valida){
             mensaje_exito();
         }else{
-            mensaje_error(linea);
+            mensaje_error(comando[0]);
         }
         free_strv(comando);
     }

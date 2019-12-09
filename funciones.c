@@ -76,7 +76,7 @@ bool comando_valido(int cant_elem, char* linea[], int operacion){
         return false;
     }
     if (operacion == VER){
-        if (cant_elem != 5 || !es_natural(linea[1])) return false;
+        if (cant_elem != 5 || !es_natural(linea[1]) || !rango_valido(linea[3],linea[4])) return false;
         if (!(igual_comando(ASC,linea[2]) || igual_comando(DESC,linea[2]))) return false;
     }
     else if (operacion == PRIORIDAD && !es_natural(linea[1])){
@@ -269,13 +269,26 @@ bool agregar_archivo(abb_t* abb, hash_t* hash, char* nombre_archivo){
         char** datos = split(linea,',');
         if (!datos) return false;
         remover_salto_linea(datos);
+
         vuelo_t* vuelo = vuelo_crear(datos);
         if (!vuelo){
             free_strv(datos);
             return false;
         }
+
+        char* num_vuelo = datos[0];
+        if (hash_pertenece(hash,num_vuelo)){
+            vuelo_t* vuelo_viejo = hash_obtener(hash,num_vuelo);
+            char* fecha_vieja = vuelo_viejo->fecha;
+            char* fecha_nueva = datos[6];
+            if (!(strcmp(fecha_vieja,fecha_nueva) == 0)){
+                abb_borrar(abb,fecha_vieja);
+            }
+        }
+
+        char* num_vuelo_copia = strdup(num_vuelo);
         if (!hash_guardar(hash,vuelo->numero_vuelo,vuelo))  return false;
-        if (!abb_guardar(abb,vuelo->fecha,vuelo->numero_vuelo)) return false;
+        if (!abb_guardar(abb,vuelo->fecha,num_vuelo_copia)) return false;
     }
     fclose(archivo);
     return true;
