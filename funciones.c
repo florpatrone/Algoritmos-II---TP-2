@@ -41,7 +41,6 @@ void mensaje_exito(void){
 }
 
 void mensaje_error(char* comando){
-    /* Imprime un mensaje de error conteniendo el comando indicado*/
     fprintf(stderr,"%s %s\n","Error en comando",comando);
 }
 
@@ -60,15 +59,10 @@ bool es_natural(const char* str){
 }
 
 bool igual_comando(const char* a, const char* b){
-    /* Compara si los dos comandos pasados por parámetro son iguales y si
-    es así, devuelve true. De lo contrario, devuelve false.*/
     return strcmp(a,b) == 0;
 }
 
 bool comando_valido(int cant_elem, char* linea[], int operacion){
-    /* Verifica que al comando ingresado por stdin le corresponda
-    la cantidad de parámetros que necesita según cuál sea. Devuelve true si
-    la cantidad de parámetros ingresada es válida y false de lo contrario*/
     if (!(cant_elem > 1))  return false;
 
     // condiciones que debe cumplir el comando según cuál sea
@@ -91,17 +85,8 @@ bool comando_valido(int cant_elem, char* linea[], int operacion){
 }
 
 vuelo_t* vuelo_crear(char** datos){
-    /* Crea un vuelo a partir de los datos de un puntero a char* pasado por parámetro*/
     vuelo_t* vuelo = malloc(sizeof(vuelo_t));
     if (!vuelo) return NULL;
-
-    //int* prioridad = malloc(sizeof(int));
-    //if (!prioridad){
-    //    free(vuelo);
-    //    return NULL;
-    //}
-    //prioridad = (atoi(datos[5]));
-    //free(datos[5]);
 
     vuelo->numero_vuelo = datos[0];
     vuelo->aerolinea = datos[1];
@@ -149,7 +134,6 @@ void remover_salto_linea(char** vector){
 }
 
 int len_vector(char** vector){
-    /* Devuelve el tamaño del vector*/
     int i = 0;
     while (vector[i] != NULL){
         i++;
@@ -158,7 +142,6 @@ int len_vector(char** vector){
 }
 
 void imprimir_datos_vuelo(vuelo_t* vuelo){
-    /* Imprime todos los datos del vuelo en una sola línea*/
     fprintf(stdout,"%s ",vuelo->numero_vuelo);
     fprintf(stdout,"%s ",vuelo->aerolinea);
     fprintf(stdout,"%s ",vuelo->aeropuerto_origen);
@@ -172,7 +155,6 @@ void imprimir_datos_vuelo(vuelo_t* vuelo){
 }
 
 void imprimir_prioridad(vuelo_t* vuelo){
-    /* Imprime la prioridad junto con el número de vuelo */
     fprintf(stdout,"%d - %s\n",atoi(vuelo->prioridad),vuelo->numero_vuelo);
 }
 
