@@ -181,7 +181,7 @@ int cmp_prioridad_vuelo(const void* void_a, const void* void_b){
     vuelo_t* vuelo_b = (vuelo_t*) void_b;
 
     if (atoi( (const char*)vuelo_a->prioridad) == atoi( (const char*)vuelo_b->prioridad)){
-        return strcmp(vuelo_a->numero_vuelo,vuelo_b->numero_vuelo);
+        return strcmp(vuelo_b->numero_vuelo,vuelo_a->numero_vuelo);
     }
     return atoi( (const char*)vuelo_a->prioridad) > atoi( (const char*)vuelo_b->prioridad) ? 1 : -1;
 }
@@ -195,7 +195,7 @@ void buscar_guardar(lista_t* lista, bool modo_asc, nodo_abb_t* raiz, char* desde
     printf("fecha analizada: %s\n",fecha);
     if (cmp_fechas(desde, fecha) < 0){
         proximo = (nodo_abb_t*) abb_nodo_ver_izq(raiz);
-        printf("va hacia la izquierda: %s\n",proximo->clave);
+        //printf("va hacia la izquierda: %s\n",proximo->clave);
         buscar_guardar(lista, modo_asc, proximo, desde, hasta); 
     }
 
@@ -234,29 +234,23 @@ bool ejecutar_comando(char** comando, hash_t* hash, abb_t* abb){
         if (comando_valido(cant_elem,comando,AGREGAR)){
             return agregar_archivo(abb,hash,comando[1]);
         }
-    }
-    else if (igual_comando(VER_TABLERO,operacion)){
+    }else if (igual_comando(VER_TABLERO,operacion)){
         if (comando_valido(cant_elem,comando,VER)){
             return ver_tablero(abb,hash,atoi( (const char*)comando[1]),comando[2],comando[3],comando[4]);
         }
-    }
-    else if (igual_comando(INFO_VUELOS,operacion)){
+    }else if (igual_comando(INFO_VUELOS,operacion)){
         if (comando_valido(cant_elem,comando,INFO)){
             return info_vuelo(hash,comando[1]);
         }
-    }
-    else if (igual_comando(PRIORIDAD_VUELOS,operacion)){
-        
+    }else if (igual_comando(PRIORIDAD_VUELOS,operacion)){
         if (comando_valido(cant_elem,comando,PRIORIDAD)){
             return prioridad_vuelos(hash,atoi( (const char*)comando[1]));
         }
-    }
-    else if (igual_comando(BORRAR_VUELOS,operacion)){
+    }else if (igual_comando(BORRAR_VUELOS,operacion)){
         if (comando_valido(cant_elem,comando,BORRAR)){
             return borrar(abb,hash,comando[1],comando[2]);
         }
-    }          
-    return false;   
+    }return false; 
 }
 
 /*************************
