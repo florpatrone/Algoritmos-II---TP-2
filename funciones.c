@@ -186,7 +186,7 @@ int cmp_prioridad_vuelo(const void* void_a, const void* void_b){
     return atoi( (const char*)vuelo_a->prioridad) > atoi( (const char*)vuelo_b->prioridad) ? 1 : -1;
 }
 
-void buscar_guardar(lista_t* lista, bool modo_asc, nodo_abb_t* raiz, char* desde, char* hasta){ 
+/*void buscar_guardar(lista_t* lista, bool modo_asc, nodo_abb_t* raiz, char* desde, char* hasta){ 
     if (!raiz){
         return;
     }
@@ -212,6 +212,7 @@ void buscar_guardar(lista_t* lista, bool modo_asc, nodo_abb_t* raiz, char* desde
         buscar_guardar(lista, modo_asc, proximo, desde, hasta); 
     }
 }
+*/
 
 int cmp_fechas(const void* void_a, const void* void_b){
     char* fecha_a = (char*) void_a;
@@ -219,10 +220,9 @@ int cmp_fechas(const void* void_a, const void* void_b){
     return strcmp(fecha_a,fecha_b);
 }
 
-void imprimir_en_tablero(nodo_abb_t* nodo_abb){
-    char* fecha = abb_ver_clave_nodo(nodo_abb);
-    char* num_vuelo = (char*) abb_ver_dato_nodo(nodo_abb);
-
+void imprimir_en_tablero(vuelo_t* vuelo){ 
+    char* fecha = vuelo->fecha;
+    char* num_vuelo = vuelo->numero_vuelo;
     fprintf(stdout, "%s - %s\n", fecha, num_vuelo);
 }
 
@@ -300,25 +300,36 @@ bool ver_tablero(abb_t* abb,  hash_t* hash, int cant_vuelos, char* param_modo, c
     }
     lista_t* lista = lista_crear();
     if (!lista) return false;
-    bool modo = strcmp(param_modo,"asc") == 0;   // true: asc or false: desc
-    
-    nodo_abb_t* raiz = abb_raiz(abb);
-    buscar_guardar(lista, modo, raiz, desde, hasta);
-    if (lista_esta_vacia(lista))    return true;
-
-    size_t i = 0;
-    while (!lista_esta_vacia(lista) && i < cant_vuelos){
-        imprimir_en_tablero(lista_borrar_primero(lista));
-        i++;
+    bool modo = strcmp(param_modo,ASC) == 0;   // true: asc or false: desc
+  
+    abb_iter_t* iter = abb_iter_in_crear(abb,desde,hasta);
+    if (!iter){
+        lista_destruir(lista,NULL);
+        return false;
     }
-    lista_destruir(lista,vuelo_destruir);
 
-    return true;
+    bool errores = false;
+    while(!errores && !abb_iter_in_al_final(iter) && lista_largo(lista) < cant_vuelos){
+        const char* fecha = abb_iter_in_ver_actual(iter);
+        char* num_vuelo = abb_obtener(abb,fecha);
+        vuelo_t* vuelo = hash_obtener(hash,num_vuelo);
+        if (modo){
+            if (!lista_insertar_ultimo(lista,vuelo)) errores = true;
+        }else{
+            if (!lista_insertar_primero(lista,vuelo)) errores = true;
+        }
+        abb_iter_in_avanzar(iter);
+    }
+    abb_iter_in_destruir(iter);
 
+    while(!errores && !lista_esta_vacia(lista)){  
+        imprimir_en_tablero(lista_borrar_primero(lista));
+    }
+    lista_destruir(lista,NULL);
+    return !errores;
 }
 
 bool info_vuelo(hash_t* hash, char* num_vuelo){
-    
     if (hash_cantidad(hash) == 0)   return false;
     if (!hash_pertenece(hash, num_vuelo)) return false;
 
