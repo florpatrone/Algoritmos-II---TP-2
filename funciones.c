@@ -262,7 +262,7 @@ bool agregar_archivo(abb_t* abb, hash_t* hash, char* nombre_archivo){
     if (!archivo){
         return false;
     }
-    
+
     char* linea = NULL;
 	size_t n = 0;
     while ((getline(&linea, &n, archivo)) > 0){
@@ -398,13 +398,24 @@ bool borrar(abb_t* abb, hash_t* hash, char* desde, char* hasta){
     abb_iter_t* iter = abb_iter_in_crear(abb,desde,hasta);
     if (!iter) return false;
 
+    lista_t* lista = lista_crear();
+
     while (!abb_iter_in_al_final(iter)){
-        char* num_vuelo = abb_borrar(abb,abb_iter_in_ver_actual(iter));
+        char* fecha_copia = strdup(abb_iter_in_ver_actual(iter));
+        lista_insertar_ultimo(lista,fecha_copia);
+        abb_iter_in_avanzar(iter);
+    }   
+    abb_iter_in_destruir(iter);
+
+    while (!lista_esta_vacia(lista)){
+        char* fecha = lista_borrar_primero(lista);
+        char* num_vuelo = abb_borrar(abb,fecha);
         vuelo_t* vuelo = hash_borrar(hash,num_vuelo);
         imprimir_datos_vuelo(vuelo);
-        abb_iter_in_avanzar(iter);
         vuelo_destruir(vuelo);
-    }       
-    abb_iter_in_destruir(iter);
+        free(num_vuelo);
+        free(fecha);
+    }
+    lista_destruir(lista,NULL);
     return true;
 }
