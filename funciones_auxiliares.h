@@ -6,18 +6,19 @@
 
 typedef struct vuelo vuelo_t;
 
+/* Imprime un mensaje de exito*/
 void mensaje_exito(void);
 
 /* Imprime un mensaje de error conteniendo el comando indicado*/
 void mensaje_error(char* comando);
 
+/* Recibe dos extremos de un intervalo y devuelve true si el primero es menor
+o igual al segundo, false en caso contrario*/
 bool rango_valido(const char* inicio, const char* fin);
 
+/* Dada una cadena, devuelve true si esta es equivalente a un numero natural,
+false en caso contrario*/
 bool es_natural(const char* str);
-
-char* rstrip(char* s);
-
-bool quedan_vuelos(abb_t* abb);
 
 /* Compara si los dos comandos pasados por parámetro son iguales y si
 es así, devuelve true. De lo contrario, devuelve false.*/
@@ -31,8 +32,11 @@ bool comando_valido(int cant_elem, char* linea[], int operacion);
 /* Crea un vuelo a partir de los datos de un puntero a char* pasado por parámetro*/
 vuelo_t* vuelo_crear(char** datos);
 
+/* Destruye el vuelo recibido por parámetro y libera toda la memoria asociada a este*/
+/* Pre: el vuelo fue creado*/
 void vuelo_destruir(void* mem_vuelo);
 
+/*Remueve el salto de linea incluido en el ultimo elemento de un vector de cadenas */
 void remover_salto_linea(char** vector);
 
 /* Devuelve el tamaño del vector*/
@@ -55,6 +59,10 @@ int cmp_fechas(const void* void_a, const void* void_b);
 
 void imprimir_en_tablero(vuelo_t* vuelo);
 
+/*Ejecuta el comando recibido por parametro.
+En caso de recibir un comando incorrecto o de ocurrir un error en su ejecuccion,
+devuelve false, true en caso contrario.
+*/
 bool ejecutar_comando(char** comando, hash_t* hash, abb_t* abb);
 
 bool imprimir_vuelo_fecha(const char* clave, void * dato, void * nada);
