@@ -48,6 +48,11 @@ void imprimir_datos_vuelo(vuelo_t* vuelo);
 /* Imprime la prioridad junto con el número de vuelo */
 void imprimir_prioridad(vuelo_t* vuelo);
 
+/* Recibe dos vuelos y devuelve un numero entero.
+Si el primero vuelo tiene mayor prioridad, devuelve un entero positivo,
+Si el segundo vuelo tiene mayor prioridad, devuelve un entero negativo.
+En caso de que tengan la misma prioridad, se comparan los numeros de vuelo
+y se considera mayor al vuelo con menor numero de vuelo. */
 int cmp_prioridad_vuelo(const void* void_a, const void* void_b);
 
 /*Recibe por parámetro una lista, un modo de guardado, un ABB y dos fechas de cota.
@@ -55,8 +60,7 @@ Busca en el ABB aquellos vuelos que se encuentren dentro de la cota pedida y los
 si se pide imprimir de manera ascendente (lista_insertar_ultimo) o descendente (lista_insertar_primero)*/
 void buscar_guardar(lista_t* lista, bool modo_asc, nodo_abb_t* raiz, char* desde, char* hasta);
 
-int cmp_fechas(const void* void_a, const void* void_b);
-
+/* Imprime la prioridad junto con el número de vuelo */
 void imprimir_en_tablero(vuelo_t* vuelo);
 
 /*Ejecuta el comando recibido por parametro.
@@ -64,9 +68,5 @@ En caso de recibir un comando incorrecto o de ocurrir un error en su ejecuccion,
 devuelve false, true en caso contrario.
 */
 bool ejecutar_comando(char** comando, hash_t* hash, abb_t* abb);
-
-bool imprimir_vuelo_fecha(const char* clave, void * dato, void * nada);
-
-int cmp_fechas_abb(const char* fecha1, const char* fecha2);
 
 #endif // AUX_H

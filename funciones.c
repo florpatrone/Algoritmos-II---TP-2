@@ -168,46 +168,11 @@ int cmp_prioridad_vuelo(const void* void_a, const void* void_b){
     return atoi( (const char*)vuelo_a->prioridad) > atoi( (const char*)vuelo_b->prioridad) ? 1 : -1;
 }
 
-/*void buscar_guardar(lista_t* lista, bool modo_asc, nodo_abb_t* raiz, char* desde, char* hasta){ 
-    if (!raiz){
-        return;
-    }
-    nodo_abb_t* proximo;
-    char* fecha = (char*) abb_ver_clave_nodo(raiz);
-    printf("fecha analizada: %s\n",fecha);
-    if (cmp_fechas(desde, fecha) < 0){
-        proximo = (nodo_abb_t*) abb_nodo_ver_izq(raiz);
-        //printf("va hacia la izquierda: %s\n",proximo->clave);
-        buscar_guardar(lista, modo_asc, proximo, desde, hasta); 
-    }
-
-    if (cmp_fechas(desde,fecha)  <= 0 && cmp_fechas(hasta, fecha) >= 0){
-        if (modo_asc){
-            lista_insertar_ultimo(lista,raiz);
-        } else {
-            lista_insertar_primero(lista, raiz);
-        }
-    }
-
-    if ( cmp_fechas(hasta, fecha) >= 0){
-        proximo = (nodo_abb_t*) abb_nodo_ver_der(raiz);
-        buscar_guardar(lista, modo_asc, proximo, desde, hasta); 
-    }
-}
-*/
-
-int cmp_fechas(const void* void_a, const void* void_b){
-    char* fecha_a = (char*) void_a;
-    char* fecha_b = (char*) void_b;
-    return strcmp(fecha_a,fecha_b);
-}
-
 void imprimir_en_tablero(vuelo_t* vuelo){ 
     char* fecha = vuelo->fecha;
     char* num_vuelo = vuelo->numero_vuelo;
     fprintf(stdout, "%s - %s\n", fecha, num_vuelo);
 }
-
 
 bool ejecutar_comando(char** comando, hash_t* hash, abb_t* abb){
     int cant_elem = len_vector(comando);
