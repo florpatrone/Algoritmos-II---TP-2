@@ -147,7 +147,7 @@ void imprimir_datos_vuelo(vuelo_t* vuelo){
     fprintf(stdout,"%s ",vuelo->aeropuerto_origen);
     fprintf(stdout,"%s ",vuelo->aeropuerto_destino);
     fprintf(stdout,"%s ",vuelo->matricula);
-    fprintf(stdout,"%i ",*vuelo->prioridad);
+    fprintf(stdout,"%s ",vuelo->prioridad);
     fprintf(stdout,"%s ",vuelo->fecha);
     fprintf(stdout,"%s ",vuelo->retraso_salida);
     fprintf(stdout,"%s ",vuelo->tiempo_vuelo);
@@ -155,7 +155,7 @@ void imprimir_datos_vuelo(vuelo_t* vuelo){
 }
 
 void imprimir_prioridad(vuelo_t* vuelo){
-    fprintf(stdout,"%d - %s\n",atoi(vuelo->prioridad),vuelo->numero_vuelo);
+    fprintf(stdout,"%s - %s\n",vuelo->prioridad,vuelo->numero_vuelo);
 }
 
 int cmp_prioridad_vuelo(const void* void_a, const void* void_b){
@@ -212,15 +212,18 @@ bool agregar_archivo(abb_t* abb, hash_t* hash, char* nombre_archivo){
 
     char* linea = NULL;
 	size_t n = 0;
-    while ((getline(&linea, &n, archivo)) > 0){
+    bool errores = false;
+    while (!errores && (getline(&linea, &n, archivo)) > 0){
         char** datos = split(linea,',');
+        
         if (!datos) return false;
         remover_salto_linea(datos);
-
+        
         vuelo_t* vuelo = vuelo_crear(datos);
         if (!vuelo){
             free_strv(datos);
-            return false;
+            errores = true;
+            break;
         }
 
         char* num_vuelo = datos[0];
@@ -229,14 +232,17 @@ bool agregar_archivo(abb_t* abb, hash_t* hash, char* nombre_archivo){
             char* fecha_vieja = vuelo_viejo->fecha;
             char* fecha_nueva = datos[6];
             if (!(strcmp(fecha_vieja,fecha_nueva) == 0)){
-                abb_borrar(abb,fecha_vieja);
+                free(abb_borrar(abb,fecha_vieja));
             }
         }
 
         char* num_vuelo_copia = strdup(num_vuelo);
-        if (!hash_guardar(hash,vuelo->numero_vuelo,vuelo))  return false;
-        if (!abb_guardar(abb,vuelo->fecha,num_vuelo_copia)) return false;
+        if (!hash_guardar(hash,vuelo->numero_vuelo,vuelo) || !abb_guardar(abb,vuelo->fecha,num_vuelo_copia)){
+            free_strv(datos);
+            errores = true;
+        }
     }
+    free(linea);
     fclose(archivo);
     return true;
 }
@@ -303,9 +309,7 @@ bool prioridad_vuelos(hash_t* hash, int k){
     for (size_t i = 0; i < k && !hash_iter_al_final(hash_iter); i++){
         clave_vuelo = hash_iter_ver_actual(hash_iter);
         vuelo = hash_obtener(hash, clave_vuelo);
-        if (!heap_encolar(heap, vuelo)) return false;
-
-        if (!hash_iter_avanzar(hash_iter)){
+        if (!heap_encolar(heap, vuelo) || !hash_iter_avanzar(hash_iter)){
             heap_destruir(heap,NULL);
             hash_iter_destruir(hash_iter);
             return false;
@@ -329,20 +333,24 @@ bool prioridad_vuelos(hash_t* hash, int k){
         }
     }
 
+    hash_iter_destruir(hash_iter);
+
     lista_t* lista = lista_crear();
     if (!lista){
         heap_destruir(heap,NULL);
-        hash_iter_destruir(hash_iter);
         return false;
     }
 
     while (!heap_esta_vacio(heap)){
         vuelo = heap_desencolar(heap);
-        lista_insertar_primero(lista, vuelo);
+        if (!lista_insertar_primero(lista, vuelo)){
+            heap_destruir(heap,NULL);
+            lista_destruir(lista,NULL);
+            return false;
+        };
     }
 
     heap_destruir(heap,NULL);
-    hash_iter_destruir(hash_iter);
 
     while (!lista_esta_vacia(lista)){
         imprimir_prioridad(lista_borrar_primero(lista));
