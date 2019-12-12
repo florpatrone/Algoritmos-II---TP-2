@@ -24,12 +24,17 @@ struct abb{
     abb_destruir_dato_t destruir_dato;
 };
 
-struct abb_iter{
+struct abb_iter_rango{
 	const abb_t* abb;
 	char* inicio;
 	char* fin;
 	pila_t* pila;
     abb_comparar_clave_t cmp;
+};
+
+struct abb_iter{
+	const abb_t* abb;
+	pila_t* pila;
 };
 
 /***************************
@@ -52,6 +57,10 @@ void destruir_nodo(nodo_abb_t* nodo){
 /***************************
 * Funciones Auxiliares
 ****************************/
+
+abb_comparar_clave_t abb_obtener_cmp(abb_t* abb){
+	return (abb_comparar_clave_t) abb->cmp;
+}
 
 nodo_abb_t* abb_raiz(abb_t* abb){
 	return (nodo_abb_t*) abb->raiz;
@@ -254,12 +263,12 @@ void abb_destruir(abb_t *arbol){
 	free(arbol);
 }
 
-/*********************************
-* Primitivas del iterador externo
-**********************************/
+/*********************************************
+* Primitivas del iterador externo con rango
+**********************************************/
 
-abb_iter_t *abb_iter_in_crear(const abb_t *arbol, char* inicio, char* fin){
-	abb_iter_t* iter = malloc(sizeof(abb_iter_t));
+abb_iter_rango_t *abb_iter_rango_in_crear(const abb_t *arbol, char* inicio, char* fin){
+	abb_iter_rango_t* iter = malloc(sizeof(abb_iter_rango_t));
 	if (!iter) return NULL;
 	
 	pila_t* pila = pila_crear();
@@ -292,7 +301,7 @@ abb_iter_t *abb_iter_in_crear(const abb_t *arbol, char* inicio, char* fin){
 	return iter;
 }
 
-bool abb_iter_in_avanzar(abb_iter_t *iter){
+bool abb_iter_rango_in_avanzar(abb_iter_rango_t *iter){
 	nodo_abb_t* desapilado = pila_desapilar(iter->pila);
 	if (!desapilado)	return false;
 
@@ -312,6 +321,73 @@ bool abb_iter_in_avanzar(abb_iter_t *iter){
 	return true;
 }
 
+const char *abb_iter_rango_in_ver_actual(const abb_iter_rango_t *iter){
+	nodo_abb_t* actual = pila_ver_tope(iter->pila);
+	if (!actual)	return NULL;
+	return actual->clave;
+}
+
+bool abb_iter_rango_in_al_final(const abb_iter_rango_t *iter){
+	return pila_ver_tope(iter->pila) == NULL;
+}
+
+void abb_iter_rango_in_destruir(abb_iter_rango_t* iter){
+	pila_destruir(iter->pila);
+	free(iter->inicio);
+	free(iter->fin);
+	free(iter);
+}
+
+void *abb_iter_rango_in_ver_actual_dato(const abb_iter_rango_t *iter){
+	nodo_abb_t* actual = pila_ver_tope(iter->pila);
+	if (!actual)	return NULL;
+	return actual->dato;
+}
+
+/*********************************************
+* Primitivas del iterador externo sin rango
+**********************************************/
+
+abb_iter_t *abb_iter_in_crear(const abb_t *arbol){
+	abb_iter_t* iter = malloc(sizeof(abb_iter_t));
+	if (!iter) return NULL;
+	
+	pila_t* pila = pila_crear();
+	if (!pila){
+		free(iter);
+		return NULL;
+	}
+	
+	nodo_abb_t* nodo = arbol->raiz;
+	while(nodo){
+		if (!pila_apilar(pila,nodo)){
+			free(iter);
+			pila_destruir(pila);
+			return NULL;
+		}
+		nodo = nodo->izq;
+	}
+
+	iter->pila = pila;
+	iter->abb = arbol;
+	return iter;
+}
+
+bool abb_iter_in_avanzar(abb_iter_t *iter){
+	nodo_abb_t* desapilado = pila_desapilar(iter->pila);
+	if (!desapilado)	return false;
+
+	if (desapilado->der){
+		pila_apilar(iter->pila, desapilado->der);
+		nodo_abb_t* hijo_izq = desapilado->der->izq;
+		while (hijo_izq){
+			pila_apilar(iter->pila, hijo_izq);
+			hijo_izq = hijo_izq->izq;
+		}
+	}
+	return true;
+}
+
 const char *abb_iter_in_ver_actual(const abb_iter_t *iter){
 	nodo_abb_t* actual = pila_ver_tope(iter->pila);
 	if (!actual)	return NULL;
@@ -324,10 +400,9 @@ bool abb_iter_in_al_final(const abb_iter_t *iter){
 
 void abb_iter_in_destruir(abb_iter_t* iter){
 	pila_destruir(iter->pila);
-	free(iter->inicio);
-	free(iter->fin);
 	free(iter);
 }
+
 
 /*********************************
 * Primitivas del iterador interno

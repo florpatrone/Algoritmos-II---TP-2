@@ -69,4 +69,9 @@ devuelve false, true en caso contrario.
 */
 bool ejecutar_comando(char** comando, hash_t* hash, abb_t* abb);
 
+/* Función Wrapper de abb_destruir para poder funcionar como abb->destruir_dato
+recibiendo un void* y llamando a abb_destruir para los sub-arboles dentro del
+ABB principal */
+void wrapper_abb_destruir(void* dato);
+
 #endif // AUX_H

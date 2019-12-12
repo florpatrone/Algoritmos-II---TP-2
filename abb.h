@@ -51,15 +51,46 @@ void abb_destruir(abb_t *arbol);
  * Iterador externo del abb
  * **************************/
 
+typedef struct abb_iter_rango abb_iter_rango_t;
 typedef struct abb_iter abb_iter_t;
 
-/**********************************************
- * Primitivas del iterador externo del abb
- * *******************************************/
+/*****************************************************
+ * Primitivas del iterador externo del abb con rango
+* ****************************************************/
 
 /* Crea un iterador del arbol que señala al primer
 elemento inorder del mismo.*/
-abb_iter_t *abb_iter_in_crear(const abb_t *arbol, char* inicio, char* fin);
+abb_iter_rango_t *abb_iter_rango_in_crear(const abb_t *arbol, char* inicio, char* fin);
+
+/* Avanza una posición del iterador de manera INORDER y
+devuelve true. Si no puede avanzar o el árbol está vacío
+devuelve false. */
+bool abb_iter_rango_in_avanzar(abb_iter_rango_t *iter);
+
+/* Muestra la clave del nodo señalado por el iterador*/
+const char *abb_iter_rango_in_ver_actual(const abb_iter_rango_t *iter);
+
+/* Devuelve true si el iterador llegó al final del arbol
+o, de lo contrario, false. */
+bool abb_iter_rango_in_al_final(const abb_iter_rango_t *iter);
+
+/* Destruye el iterador */
+void abb_iter_rango_in_destruir(abb_iter_rango_t* iter);
+
+/* Primitivas del iterador interno del abb */
+
+/* Aplica la función "visitar" nodo a nodo de modo INORDER */
+void abb_in_order(abb_t *arbol, bool visitar(const char *, void *, void *), void *extra);
+
+/*Devuelve el dato del nodo señalado por el iterador */
+void *abb_iter_rango_in_ver_actual_dato(const abb_iter_rango_t *iter);
+/*****************************************************
+ * Primitivas del iterador externo del abb sin rango
+* ****************************************************/
+
+/* Crea un iterador del arbol que señala al primer
+elemento inorder del mismo.*/
+abb_iter_t *abb_iter_in_crear(const abb_t *arbol);
 
 /* Avanza una posición del iterador de manera INORDER y
 devuelve true. Si no puede avanzar o el árbol está vacío
@@ -76,12 +107,6 @@ bool abb_iter_in_al_final(const abb_iter_t *iter);
 /* Destruye el iterador */
 void abb_iter_in_destruir(abb_iter_t* iter);
 
-/* Primitivas del iterador interno del abb */
-
-/* Aplica la función "visitar" nodo a nodo de modo INORDER */
-void abb_in_order(abb_t *arbol, bool visitar(const char *, void *, void *), void *extra);
-
-
 /******************
 Primitivas Extra 
 ******************/
@@ -95,5 +120,6 @@ char* abb_ver_clave_nodo(nodo_abb_t* nodo);
 
 void* abb_ver_dato_nodo(nodo_abb_t* nodo);
 
+abb_comparar_clave_t abb_obtener_cmp(abb_t* abb);
 
 #endif
