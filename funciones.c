@@ -203,19 +203,18 @@ bool ejecutar_comando(char** comando, hash_t* hash, abb_t* abb){
 }
 
 bool abb_guardar_fecha(abb_t *arbol, const char *clave, void *dato){
-
     bool pertenece = abb_pertenece(arbol, clave);
     abb_t* sub_arbol;
 
     if (pertenece){
         sub_arbol = abb_obtener(arbol,clave);
     } else {
-        
         sub_arbol = abb_crear(abb_obtener_cmp(arbol), NULL);
         if (!sub_arbol) return false;
         if (!abb_guardar(arbol,clave,sub_arbol)){
             abb_destruir(sub_arbol);
-            return false;}
+            return false;
+        }
     }
 
     if (!abb_guardar(sub_arbol,dato,DATO_RELLENO)){
@@ -226,7 +225,6 @@ bool abb_guardar_fecha(abb_t *arbol, const char *clave, void *dato){
 }
 
 void wrapper_abb_destruir(void* dato){
-
 	abb_t* abb = dato;
     abb_destruir(abb);
 }
@@ -258,17 +256,18 @@ bool agregar_archivo(abb_t* abb, hash_t* hash, char* nombre_archivo){
         }
 
         char* num_vuelo = datos[0];
+        char* fecha = datos[6];
         if (hash_pertenece(hash,num_vuelo)){
             vuelo_t* vuelo_viejo = hash_obtener(hash,num_vuelo);
             char* fecha_vieja = vuelo_viejo->fecha;
-            char* fecha_nueva = datos[6];
-            if (!(strcmp(fecha_vieja,fecha_nueva) == 0)){
-                free(abb_borrar(abb,fecha_vieja));
+            if (strcmp(fecha_vieja,fecha) != 0){
+                abb_t* subarbol = abb_obtener(abb,fecha_vieja);
+                abb_borrar(subarbol,num_vuelo);
             }
         }
 
-        char* num_vuelo_copia = strdup(num_vuelo);
-        if (!hash_guardar(hash,vuelo->numero_vuelo,vuelo) || !abb_guardar_fecha(abb,vuelo->fecha,num_vuelo_copia)){
+        //char* num_vuelo_copia = strdup(num_vuelo);
+        if (!hash_guardar(hash,vuelo->numero_vuelo,vuelo) || !abb_guardar_fecha(abb,vuelo->fecha,num_vuelo)){
             free_strv(datos);
             errores = true;
         }
