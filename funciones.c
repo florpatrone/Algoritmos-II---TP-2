@@ -203,21 +203,27 @@ bool ejecutar_comando(char** comando, hash_t* hash, abb_t* abb){
 }
 
 bool abb_guardar_fecha(abb_t *arbol, const char *clave, void *dato){
+
+    printf("clave a guardar: %s, dato a guardar: %s\n",clave, (char*) dato);
     bool pertenece = abb_pertenece(arbol, clave);
     abb_t* sub_arbol;
 
     if (pertenece){
+        printf("pertenece la clave al árbol\n");
         sub_arbol = abb_obtener(arbol,clave);
     } else {
+        printf("No pertenece la clave al árbol\n");
         sub_arbol = abb_crear(abb_obtener_cmp(arbol), NULL);
         if (!sub_arbol) return false;
         if (!abb_guardar(arbol,clave,sub_arbol)){
+            printf("no se pudo guardar el subarbol en el arbol\n");
             abb_destruir(sub_arbol);
             return false;
         }
     }
 
     if (!abb_guardar(sub_arbol,dato,DATO_RELLENO)){
+        printf("no se pudo guardar la fecha en el sub-arbol\n");
         return false;
     }
     
@@ -243,6 +249,7 @@ bool agregar_archivo(abb_t* abb, hash_t* hash, char* nombre_archivo){
 	size_t n = 0;
     bool errores = false;
     while (!errores && (getline(&linea, &n, archivo)) > 0){
+        printf("linea: %s\n",linea);
         char** datos = split(linea,',');
         
         if (!datos) return false;
@@ -287,6 +294,7 @@ bool ver_tablero(abb_t* abb,  hash_t* hash, int cant_vuelos, char* param_modo, c
   
     abb_iter_rango_t* iter_global = abb_iter_rango_in_crear(abb,desde,hasta);
     if (!iter_global){
+        printf("No se crea el iterador global\n");
         lista_destruir(lista,NULL);
         return false;
     }
@@ -296,10 +304,12 @@ bool ver_tablero(abb_t* abb,  hash_t* hash, int cant_vuelos, char* param_modo, c
 
         // Entro en el sub-árbol de la clave y lo recorro
         abb_t* sub_arbol = abb_iter_rango_in_ver_actual_dato(iter_global);
+        printf("raiz del sub-arbol: %s\n",abb_ver_clave_nodo((nodo_abb_t*)abb_raiz(sub_arbol)));
         abb_iter_t* iter_local = abb_iter_in_crear(sub_arbol);
         while (!abb_iter_in_al_final(iter_local) && lista_largo(lista) < cant_vuelos){
             
             const char* num_vuelo = abb_iter_in_ver_actual(iter_local);
+            printf("num_vuelo: %s\n",num_vuelo);
             vuelo_t* vuelo = hash_obtener(hash,num_vuelo);
             if (modo){
                 if (!lista_insertar_ultimo(lista,vuelo)) errores = true;
@@ -340,24 +350,31 @@ bool info_vuelo(hash_t* hash, char* num_vuelo){
 }
 
 bool prioridad_vuelos(hash_t* hash, int k){
+    printf("entra en prioridad_vuelos\n");
     if (hash_cantidad(hash) == 0)   return true;
 
-    heap_t* heap = heap_crear(cmp_prioridad_vuelo);
+    printf("cantidad del heap mayor a 0\n");
+    heap_t* heap = heap_crear(cmp_prioridad_vuelo); // de mínimos
     if (!heap)  return false;
+    printf("crea el heap de mínimos\n");
 
     hash_iter_t* hash_iter = hash_iter_crear(hash);
     if (!hash_iter){
         heap_destruir(heap,NULL);
         return false;
     }
-
+    printf("crea el iterador del hash\n");
     vuelo_t* vuelo;
     const char* clave_vuelo;
 
     for (size_t i = 0; i < k && !hash_iter_al_final(hash_iter); i++){
+        printf("ingresa al for con i = %ld\n",i);
+        printf("hash ver actual: %s\n",hash_iter_ver_actual(hash_iter));
         clave_vuelo = hash_iter_ver_actual(hash_iter);
+        printf("clave_vuelo: %s\n",clave_vuelo);
         vuelo = hash_obtener(hash, clave_vuelo);
         if (!heap_encolar(heap, vuelo) || !hash_iter_avanzar(hash_iter)){
+            printf("no se pudo encolar en el heap o no se pudo avanzar el iterador del hash\n");
             heap_destruir(heap,NULL);
             hash_iter_destruir(hash_iter);
             return false;
@@ -371,7 +388,11 @@ bool prioridad_vuelos(hash_t* hash, int k){
 
         if (cmp_prioridad_vuelo(vuelo,min) > 0){
             heap_desencolar(heap);
-            heap_encolar(heap, vuelo);
+            if (!heap_encolar(heap, vuelo)){
+                heap_destruir(heap,NULL);
+                hash_iter_destruir(hash_iter);
+                return false;
+            }
         }
 
         if (!hash_iter_avanzar(hash_iter)){
@@ -408,6 +429,7 @@ bool prioridad_vuelos(hash_t* hash, int k){
     return true;
 }
 
+bool imprimir_claves(const char * clave, void * dato, void * extra);
 bool borrar(abb_t* abb, hash_t* hash, char* desde, char* hasta){
     abb_iter_rango_t* iter_global = abb_iter_rango_in_crear(abb,desde,hasta);
     if (!iter_global) return false;
@@ -416,28 +438,38 @@ bool borrar(abb_t* abb, hash_t* hash, char* desde, char* hasta){
 
     while (!abb_iter_rango_in_al_final(iter_global)){
         char* fecha_copia = strdup(abb_iter_rango_in_ver_actual(iter_global));
+        printf("fecha_copia de iter_global->actual: %s\n",fecha_copia);
         lista_insertar_ultimo(lista,fecha_copia);
         abb_iter_rango_in_avanzar(iter_global);
-    }   
+    }
     abb_iter_rango_in_destruir(iter_global);
 
     abb_t* sub_arbol;
     while (!lista_esta_vacia(lista)){
         char* fecha = lista_borrar_primero(lista);
+        printf("fecha a borrar: %s\n",fecha);
         sub_arbol = abb_borrar(abb,fecha);
 
+        printf("ARBOL ABB:\n");
+        abb_in_order(abb, imprimir_claves, NULL);
+        printf("SUB-ARBOL:\n");
+        abb_in_order(sub_arbol, imprimir_claves, NULL);
         abb_iter_t* iter_local = abb_iter_in_crear(sub_arbol);
         if (!iter_local){
             lista_destruir(lista,NULL);
             return false;
         }
 
+        const char* num_vuelo;
+        vuelo_t* vuelo;
         while (!abb_iter_in_al_final(iter_local)){
 
-            const char* num_vuelo = abb_iter_in_ver_actual(iter_local);
-            vuelo_t* vuelo = hash_borrar(hash,num_vuelo);
+            num_vuelo = abb_iter_in_ver_actual(iter_local);
+            printf("numero de vuelo a borrar de subarbol: %s\n", num_vuelo);
+            vuelo = hash_borrar(hash,num_vuelo);
             imprimir_datos_vuelo(vuelo);
             vuelo_destruir(vuelo);
+            printf("vuelo_destruido\n");
             //free(num_vuelo);
             free(fecha);
 
@@ -453,5 +485,12 @@ bool borrar(abb_t* abb, hash_t* hash, char* desde, char* hasta){
         
     }
     lista_destruir(lista,NULL);
+    printf("ARBOL ABB:\n");
+    abb_in_order(abb, imprimir_claves, NULL);
     return true;
 }
+
+ bool imprimir_claves(const char * clave, void * dato, void * extra){
+     printf("clave dentro del arbol: %s\n", clave);
+     return true;
+ }
