@@ -229,6 +229,80 @@ void wrapper_abb_destruir(void* dato){
     abb_destruir(abb);
 }
 
+lista_t* obtener_claves_abb(abb_t* abb, char* desde, char* hasta){
+    
+    abb_iter_rango_t* iter = abb_iter_rango_in_crear(abb,desde,hasta);
+    if (!iter) return NULL;
+
+    lista_t* lista = lista_crear();
+    if (!lista){
+        abb_iter_rango_in_destruir(iter);
+        return NULL;
+    }
+
+    while (!abb_iter_rango_in_al_final(iter)){
+        char* fecha_copia = strdup(abb_iter_rango_in_ver_actual(iter));
+        lista_insertar_ultimo(lista,fecha_copia);
+        
+        if (!abb_iter_rango_in_avanzar(iter)){
+            lista_destruir(lista,NULL);
+            abb_iter_rango_in_destruir(iter);
+            return NULL;
+        }
+    }
+    abb_iter_rango_in_destruir(iter);
+    return lista;
+}
+
+lista_t* borrar_fechas_abb(abb_t* abb, lista_t* lista_fechas){
+    lista_t* lista_vuelos = lista_crear();
+    if (!lista_vuelos)  return NULL;
+
+    while (!lista_esta_vacia(lista_fechas)){
+        char* fecha = lista_borrar_primero(lista_fechas);
+        abb_t* sub_arbol = abb_borrar(abb, fecha);
+        abb_iter_t* iter = abb_iter_in_crear(sub_arbol);
+        if (!iter){
+            lista_destruir(lista_vuelos,NULL);
+            abb_destruir(sub_arbol);
+            return NULL;
+        }
+
+        while (!abb_iter_in_al_final(iter)){
+            char* num_vuelo = strdup(abb_iter_in_ver_actual(iter));
+            if (!lista_insertar_ultimo(lista_vuelos,num_vuelo)){
+                lista_destruir(lista_vuelos,NULL);
+                abb_destruir(sub_arbol);
+                abb_iter_in_destruir(iter);
+                return NULL;
+            }
+
+            if (!abb_iter_in_avanzar(iter)){
+                lista_destruir(lista_vuelos,NULL);
+                abb_destruir(sub_arbol);
+                abb_iter_in_destruir(iter);
+                return NULL;
+            }
+        }
+        abb_destruir(sub_arbol);
+    }
+    return lista_vuelos;
+}
+
+bool borrar_vuelos_hash(hash_t* hash, lista_t* lista){
+    while (!lista_esta_vacia(lista)){
+        char* num_vuelo = lista_borrar_primero(lista);
+        vuelo_t* vuelo = hash_borrar(hash, num_vuelo);
+        if (!vuelo) return false;
+
+        imprimir_datos_vuelo(vuelo);
+        vuelo_destruir(vuelo);
+        free(num_vuelo);
+    }
+    lista_destruir(lista,NULL);
+    return true;
+}
+
 /*************************
  * FUNCIONES PRINCIPALES
  * **********************/
@@ -283,7 +357,7 @@ bool ver_tablero(abb_t* abb,  hash_t* hash, int cant_vuelos, char* param_modo, c
     }
     lista_t* lista = lista_crear();
     if (!lista) return false;
-    bool modo = strcmp(param_modo,ASC) == 0;   // true: asc or false: desc
+    bool modo_asc = strcmp(param_modo,ASC) == 0;   // true: asc or false: desc
   
     abb_iter_rango_t* iter_global = abb_iter_rango_in_crear(abb,desde,hasta);
     if (!iter_global){
@@ -292,17 +366,20 @@ bool ver_tablero(abb_t* abb,  hash_t* hash, int cant_vuelos, char* param_modo, c
     }
 
     bool errores = false;
-    while(!errores && !abb_iter_rango_in_al_final(iter_global) && lista_largo(lista) < cant_vuelos){
+    while(!errores && !abb_iter_rango_in_al_final(iter_global)){
 
         // Entro en el sub-árbol de la clave y lo recorro
         abb_t* sub_arbol = abb_iter_rango_in_ver_actual_dato(iter_global);
         abb_iter_t* iter_local = abb_iter_in_crear(sub_arbol);
-        while (!abb_iter_in_al_final(iter_local) && lista_largo(lista) < cant_vuelos){
+
+        while (!abb_iter_in_al_final(iter_local)){
+            if (modo_asc && lista_largo(lista) == cant_vuelos)   break;
+
             const char* num_vuelo = abb_iter_in_ver_actual(iter_local);
             vuelo_t* vuelo = hash_obtener(hash,num_vuelo);
-            if (modo){
+            if (modo_asc){
                 if (!lista_insertar_ultimo(lista,vuelo)) errores = true;
-            }else{
+            } else {
                 if (!lista_insertar_primero(lista,vuelo)) errores = true;
             }
 
@@ -322,7 +399,7 @@ bool ver_tablero(abb_t* abb,  hash_t* hash, int cant_vuelos, char* param_modo, c
     }
     abb_iter_rango_in_destruir(iter_global);
 
-    while(!errores && !lista_esta_vacia(lista)){  
+    for (size_t i = 0; i < cant_vuelos && !lista_esta_vacia(lista); i++){
         imprimir_en_tablero(lista_borrar_primero(lista));
     }
     lista_destruir(lista,NULL);
@@ -410,47 +487,17 @@ bool prioridad_vuelos(hash_t* hash, int k){
     return true;
 }
 
-bool imprimir_claves(const char * clave, void * dato, void * extra);
 bool borrar(abb_t* abb, hash_t* hash, char* desde, char* hasta){
-    abb_iter_rango_t* iter_global = abb_iter_rango_in_crear(abb,desde,hasta);
-    if (!iter_global) return false;
+    if (hash_cantidad(hash) == 0)   return true;
 
-    lista_t* lista_fechas = lista_crear();
-    lista_t* lista_vuelos = lista_crear();
+    lista_t* lista_fechas = obtener_claves_abb(abb,desde,hasta);
+    if (!lista_fechas)  return false;
 
-    while (!abb_iter_rango_in_al_final(iter_global)){
-        char* fecha_copia = strdup(abb_iter_rango_in_ver_actual(iter_global));
-        lista_insertar_ultimo(lista_fechas,fecha_copia);
-        abb_iter_rango_in_avanzar(iter_global);
+    lista_t* lista_vuelos = borrar_fechas_abb(abb,lista_fechas);
+    if (!lista_vuelos){
+        lista_destruir(lista_fechas,NULL);
+        return false;
     }
-    abb_iter_rango_in_destruir(iter_global);
 
-    while (!lista_esta_vacia(lista_fechas)){
-        char* fecha = lista_borrar_primero(lista_fechas);
-        abb_t* sub_arbol = abb_borrar(abb,fecha);
-        abb_iter_t* iter_local = abb_iter_in_crear(sub_arbol);
-        if (!iter_local){
-            lista_destruir(lista_fechas,free);
-            lista_destruir(lista_vuelos,free);
-            return false;
-        }
-        while (!abb_iter_in_al_final(iter_local)){
-            char* num_vuelo_copia = strdup(abb_iter_in_ver_actual(iter_local));
-            lista_insertar_ultimo(lista_vuelos,num_vuelo_copia);
-            abb_iter_in_avanzar(iter_local);
-        }
-        abb_destruir(sub_arbol);
-        free(fecha);
-    }
-    lista_destruir(lista_fechas,NULL);
-
-    while (!lista_esta_vacia(lista_vuelos)){
-        char* num_vuelo = lista_borrar_primero(lista_vuelos);
-        vuelo_t* vuelo = hash_borrar(hash,num_vuelo);
-        imprimir_datos_vuelo(vuelo);
-        vuelo_destruir(vuelo);
-        free(num_vuelo);
-    }
-    lista_destruir(lista_vuelos,NULL);
-    return true;
+    return borrar_vuelos_hash(hash,lista_vuelos);
 }

@@ -9,7 +9,7 @@
 int main(){
     hash_t* hash = hash_crear(vuelo_destruir);
     abb_t* abb = abb_crear(strcmp,wrapper_abb_destruir);
-
+    if (!hash || !abb ) return -1;
     char* linea = NULL;
 	size_t n = 0;
     while ((getline(&linea, &n, stdin)) > 0){

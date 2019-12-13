@@ -74,4 +74,17 @@ recibiendo un void* y llamando a abb_destruir para los sub-arboles dentro del
 ABB principal */
 void wrapper_abb_destruir(void* dato);
 
+/* Recibe una lista con números de vuelos y los borra del hash- Devuelve true si 
+pudo borrar correctamente o false de lo contrario. 
+Post: El hash tiene (len(lista)) menos elementos. */
+bool borrar_vuelos_hash(hash_t* hash, lista_t* lista);
+
+/* Recibe una lista con fechas de vuelo y borra las mismas del abb.
+Devuelve una lista con los números de vuelo borrados. */
+lista_t* borrar_fechas_abb(abb_t* abb, lista_t* lista_fechas);
+
+/* Obtiene todas las claves del ABB que se encuentran dentro del
+rango limitado por "desde" y "hasta" (inclusive) */
+lista_t* obtener_claves_abb(abb_t* abb, char* desde, char* hasta);
+
 #endif // AUX_H

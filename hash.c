@@ -2,13 +2,15 @@
 #include "hash.h"
 #include "lista.h"
 #include <stdlib.h>
+#include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
+#include "funciones.h"
 
 #define BORRAR_NODO true
 #define AUMENTAR true
 #define FACTOR_CARGA 2
-#define CAPACIDAD_INICIAL 19
+#define CAPACIDAD_INICIAL 23
 #define CTE_AUMENTO 2
 #define CTE_REDUCCION 2
 #define CRITERIO_REDUCCION 4
@@ -115,6 +117,10 @@ campo_t *_hash_obtener(const hash_t* hash, const char *clave, size_t indice_bald
             campo = lista_iter_borrar(iterador_lista);
         }
         lista_iter_destruir(iterador_lista);
+        if (lista_esta_vacia(lista)){
+            lista_destruir(lista,NULL);
+            hash->baldes[indice_balde] = NULL;
+        }
         return campo;
     }
     lista_iter_destruir(iterador_lista);
@@ -252,16 +258,17 @@ Pre: el hash debe haber sido creado.
 Post: se devuelve un iterador inicializado en una lista del hash. */
 lista_iter_t* hash_iter_crear_balde_iter(hash_iter_t* iter){
     lista_t** baldes = iter->hash->baldes;
-    size_t* actual = &(iter->balde_actual);
+    size_t actual = iter->balde_actual;
 
     if (hash_cantidad(iter->hash) == 0) return NULL;
 
-    while (baldes[*actual] == NULL){
-        (*actual)++;
+    while (baldes[actual] == NULL && actual < (size_t) iter->hash->capacidad){
+        actual++;
     }
+    if (actual == (size_t) iter->hash->capacidad)   return NULL;
 
-    lista_iter_t* balde_iter = lista_iter_crear(baldes[*actual]);
-
+    iter->balde_actual = actual;
+    lista_iter_t* balde_iter = lista_iter_crear(baldes[actual]);
     return balde_iter;
 }
 
@@ -416,15 +423,15 @@ bool hash_iter_avanzar(hash_iter_t *iter){
 
     lista_iter_t* balde_iter = iter->balde_iter;
 
-    lista_iter_avanzar(balde_iter);
+    if (!lista_iter_avanzar(balde_iter))    return false;
     iter->iterados++;
     
-    if (!lista_iter_al_final(balde_iter) || hash_iter_al_final(iter)) return true;
-
+    if (hash_iter_al_final(iter)) return true;
+    if (!lista_iter_al_final(balde_iter))   return true;
+    
     iter->balde_actual++;
 
     lista_iter_t* nuevo_balde_iter = hash_iter_crear_balde_iter(iter);
-
     if (nuevo_balde_iter == NULL) return false; //falso negativo;
 
     iter->balde_iter = nuevo_balde_iter;
@@ -435,7 +442,6 @@ bool hash_iter_avanzar(hash_iter_t *iter){
 
 const char *hash_iter_ver_actual(const hash_iter_t *iter){
     if (hash_iter_al_final(iter)) return NULL;
-
     campo_t* campo = lista_iter_ver_actual(iter->balde_iter);
     return campo->clave;
 }

@@ -1,0 +1,1 @@
+algueiza: main.o funciones.o heap.o abb.o hash.o pila.o lista.o strutil.o

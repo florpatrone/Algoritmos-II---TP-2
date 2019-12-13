@@ -146,7 +146,6 @@ void lista_destruir(lista_t *lista, void destruir_dato(void *)){
 
 lista_iter_t *lista_iter_crear(lista_t *lista){
     lista_iter_t* iterador = malloc(sizeof(lista_iter_t));
-
     if (iterador == NULL) return NULL;
 
     iterador->lista = lista;

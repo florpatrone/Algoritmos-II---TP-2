@@ -5,6 +5,7 @@
 #include "abb.h"
 #include "strutil.h"
 
+
 /* Guarda en las estructuras recibidas los datos contenidos en el archivo recibido*/
 bool agregar_archivo(abb_t* abb, hash_t* hash, char* nombre_archivo);
 
